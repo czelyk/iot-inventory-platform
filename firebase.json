@@ -1,0 +1,39 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "smart-kuehlschrank81",
+          "appId": "1:732203376303:android:ef29af1a6cfd9520cafe5a",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "smart-kuehlschrank81",
+          "configurations": {
+            "android": "1:732203376303:android:ef29af1a6cfd9520cafe5a",
+            "ios": "1:732203376303:ios:aa967cbdd06b8ac0cafe5a",
+            "macos": "1:732203376303:ios:aa967cbdd06b8ac0cafe5a",
+            "web": "1:732203376303:web:2e9d521838826762cafe5a",
+            "windows": "1:732203376303:web:ed5ad5c42e5d6481cafe5a"
+          }
+        }
+      }
+    }
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "disallowLegacyRuntimeConfig": true,
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+import 'app_localizations.dart';
+
+class AppLocalizationsTr extends AppLocalizations {
+  const AppLocalizationsTr([super.localeName = 'tr']);
+
+  @override String get appTitle => 'Stok Takip';
+  @override String get home => 'Stok';
+  @override String get shopping => 'Tedarik';
+  @override String get notifications => 'Kalibrasyon';
+  @override String get account => 'Hesap';
+  @override String get inventoryMonitoring => 'Stok Takip';
+  @override String get shoppingList => 'Tedarik Listesi';
+  @override String get save => 'Kaydet';
+  @override String get cancel => 'İptal';
+  @override String get add => 'Ekle';
+  @override String get addNewItem => 'Ürün Ekle';
+  @override String get itemName => 'Ürün Adı';
+  @override String get error => 'Hata';
+  @override String get yourShoppingListIsEmpty => 'Tedarik listeniz boş.';
+  @override String get noProductsFound => 'Ağırlık platformu bulunamadı.';
+  @override String get logOut => 'Oturumu Kapat';
+  @override String get settings => 'Ayarlar';
+  @override String get language => 'Dil';
+  @override String get login => 'Giriş Yap';
+  @override String get register => 'Kayıt Ol';
+  @override String get email => 'E-posta';
+  @override String get password => 'Şifre';
+  @override String get dontHaveAccount => 'Hesabınız yok mu?';
+  @override String get alreadyHaveAccount => 'Zaten bir hesabınız var mı?';
+  @override String get category => 'Kategori';
+  @override String get productSettings => 'Ürün Ayarları';
+  @override String get productName => 'Ürün Adı';
+  @override String get unitWeight => 'Birim Ağırlık';
+  @override String get unitWeightHint => 'Bir ürünün bilinen veya kalibre edilmiş ağırlığı';
+  @override String get minimumStockThreshold => 'Minimum Stok Eşiği';
+  @override String get optionalField => 'İsteğe bağlı';
+  @override String get invalidProductSettings => 'Ürün adı, pozitif birim ağırlık ve negatif olmayan eşik girin.';
+  @override String get currentWeight => 'Mevcut Ağırlık';
+  @override String get estimatedQuantity => 'Tahmini Adet';
+  @override String get stockStatus => 'Stok Durumu';
+  @override String get lowStock => 'Düşük Stok';
+  @override String get stockOk => 'Stok Yeterli';
+  @override String get thresholdNotConfigured => 'Eşik ayarlanmadı';
+  @override String get notConfigured => 'Birim ağırlık ayarlanmadı';
+  @override String get sensorCalibration => 'Sensör Kalibrasyonu';
+  @override String get emptyPlatforms => 'Tüm ağırlık platformlarını boşaltın.';
+  @override String get setZero => 'Sıfırla (Dara)';
+  @override String get place800gP1 => 'Platform 1 üzerine 800 g ağırlık yerleştirin.';
+  @override String get place800gP2 => 'Platform 2 üzerine 800 g ağırlık yerleştirin.';
+  @override String get calibrateP1 => "Platform 1'i Kalibre Et";
+  @override String get calibrateP2 => "Platform 2'yi Kalibre Et";
+  @override String get calibrationComplete => 'Kalibrasyon başarıyla tamamlandı.';
+  @override String get startCalibration => 'Kalibrasyonu Başlat';
+}

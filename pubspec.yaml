@@ -1,0 +1,39 @@
+name: smart_kuhlschrank
+description: Modular weight-based IoT stock and inventory monitoring platform.
+
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.2.0-0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.19.0
+  provider: ^6.1.5+1
+  http: ^1.2.1
+  firebase_core: ^3.6.0
+  cloud_firestore: ^5.6.0
+  firebase_auth: ^5.6.0
+  shared_preferences: ^2.2.2
+  flutter_blue_plus: ^1.31.0  # Bluetooth iletişimi için
+  permission_handler: ^11.3.0 # İzinleri yönetmek için
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+  flutter_launcher_icons: ^0.13.1
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/inventory_app_icon.png"
+
+flutter:
+  uses-material-design: true
+  generate: true

@@ -1,0 +1,54 @@
+import 'app_localizations.dart';
+
+class AppLocalizationsDe extends AppLocalizations {
+  const AppLocalizationsDe([super.localeName = 'de']);
+
+  @override String get appTitle => 'Bestandsüberwachung';
+  @override String get home => 'Bestand';
+  @override String get shopping => 'Nachbestellen';
+  @override String get notifications => 'Kalibrierung';
+  @override String get account => 'Konto';
+  @override String get inventoryMonitoring => 'Bestandsüberwachung';
+  @override String get shoppingList => 'Nachbestellliste';
+  @override String get save => 'Speichern';
+  @override String get cancel => 'Abbrechen';
+  @override String get add => 'Hinzufügen';
+  @override String get addNewItem => 'Produkt hinzufügen';
+  @override String get itemName => 'Produktname';
+  @override String get error => 'Fehler';
+  @override String get yourShoppingListIsEmpty => 'Ihre Nachbestellliste ist leer.';
+  @override String get noProductsFound => 'Keine Wiegeplattformen gefunden.';
+  @override String get logOut => 'Abmelden';
+  @override String get settings => 'Einstellungen';
+  @override String get language => 'Sprache';
+  @override String get login => 'Anmelden';
+  @override String get register => 'Registrieren';
+  @override String get email => 'E-Mail';
+  @override String get password => 'Passwort';
+  @override String get dontHaveAccount => 'Sie haben noch kein Konto?';
+  @override String get alreadyHaveAccount => 'Sie haben bereits ein Konto?';
+  @override String get category => 'Kategorie';
+  @override String get productSettings => 'Produkteinstellungen';
+  @override String get productName => 'Produktname';
+  @override String get unitWeight => 'Stückgewicht';
+  @override String get unitWeightHint => 'Bekanntes oder kalibriertes Gewicht eines Artikels';
+  @override String get minimumStockThreshold => 'Mindestbestand';
+  @override String get optionalField => 'Optional';
+  @override String get invalidProductSettings => 'Geben Sie Produktname, positives Stückgewicht und einen nicht negativen Grenzwert ein.';
+  @override String get currentWeight => 'Aktuelles Gewicht';
+  @override String get estimatedQuantity => 'Geschätzte Stückzahl';
+  @override String get stockStatus => 'Bestandsstatus';
+  @override String get lowStock => 'Niedriger Bestand';
+  @override String get stockOk => 'Bestand OK';
+  @override String get thresholdNotConfigured => 'Grenzwert nicht gesetzt';
+  @override String get notConfigured => 'Stückgewicht nicht gesetzt';
+  @override String get sensorCalibration => 'Sensorkalibrierung';
+  @override String get emptyPlatforms => 'Alle Wiegeplattformen leeren.';
+  @override String get setZero => 'Nullsetzen (Tara)';
+  @override String get place800gP1 => 'Legen Sie 800 g auf Plattform 1.';
+  @override String get place800gP2 => 'Legen Sie 800 g auf Plattform 2.';
+  @override String get calibrateP1 => 'Plattform 1 kalibrieren';
+  @override String get calibrateP2 => 'Plattform 2 kalibrieren';
+  @override String get calibrationComplete => 'Kalibrierung erfolgreich abgeschlossen.';
+  @override String get startCalibration => 'Kalibrierung starten';
+}

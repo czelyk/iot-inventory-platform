@@ -1,0 +1,54 @@
+import 'app_localizations.dart';
+
+class AppLocalizationsEn extends AppLocalizations {
+  const AppLocalizationsEn([super.localeName = 'en']);
+
+  @override String get appTitle => 'Inventory Monitoring';
+  @override String get home => 'Inventory';
+  @override String get shopping => 'Restock';
+  @override String get notifications => 'Calibration';
+  @override String get account => 'Account';
+  @override String get inventoryMonitoring => 'Inventory Monitoring';
+  @override String get shoppingList => 'Restocking List';
+  @override String get save => 'Save';
+  @override String get cancel => 'Cancel';
+  @override String get add => 'Add';
+  @override String get addNewItem => 'Add Product';
+  @override String get itemName => 'Product Name';
+  @override String get error => 'Error';
+  @override String get yourShoppingListIsEmpty => 'Your restocking list is empty.';
+  @override String get noProductsFound => 'No weighing platforms found.';
+  @override String get logOut => 'Log Out';
+  @override String get settings => 'Settings';
+  @override String get language => 'Language';
+  @override String get login => 'Login';
+  @override String get register => 'Register';
+  @override String get email => 'Email';
+  @override String get password => 'Password';
+  @override String get dontHaveAccount => "Don't have an account?";
+  @override String get alreadyHaveAccount => 'Already have an account?';
+  @override String get category => 'Category';
+  @override String get productSettings => 'Product Settings';
+  @override String get productName => 'Product Name';
+  @override String get unitWeight => 'Unit Weight';
+  @override String get unitWeightHint => 'Known or calibrated weight of one item';
+  @override String get minimumStockThreshold => 'Minimum Stock Threshold';
+  @override String get optionalField => 'Optional';
+  @override String get invalidProductSettings => 'Enter a product name, a positive unit weight, and a non-negative threshold.';
+  @override String get currentWeight => 'Current Weight';
+  @override String get estimatedQuantity => 'Estimated Quantity';
+  @override String get stockStatus => 'Stock Status';
+  @override String get lowStock => 'Low Stock';
+  @override String get stockOk => 'Stock OK';
+  @override String get thresholdNotConfigured => 'Threshold not set';
+  @override String get notConfigured => 'Unit weight not set';
+  @override String get sensorCalibration => 'Sensor Calibration';
+  @override String get emptyPlatforms => 'Clear all weighing platforms.';
+  @override String get setZero => 'Set Zero (Tare)';
+  @override String get place800gP1 => 'Place 800 g on Platform 1.';
+  @override String get place800gP2 => 'Place 800 g on Platform 2.';
+  @override String get calibrateP1 => 'Calibrate Platform 1';
+  @override String get calibrateP2 => 'Calibrate Platform 2';
+  @override String get calibrationComplete => 'Calibration completed successfully.';
+  @override String get startCalibration => 'Start Calibration';
+}
