@@ -69,6 +69,26 @@ abstract class AppLocalizations {
   String get calibrateP2;
   String get calibrationComplete;
   String get startCalibration;
+  String get appearance;
+  String get theme;
+  String get systemDefault;
+  String get lightTheme;
+  String get darkTheme;
+  String get categoryAutomotive;
+  String get categoryElectronics;
+  String get categoryHardware;
+  String get categoryPackagedGoods;
+  String get categoryCleaningSupplies;
+  String get categoryOfficeSupplies;
+  String get categoryOther;
+  String get activePlatforms;
+  String get lowStockProducts;
+  String get staleSensors;
+  String get sensorDataStale;
+  String get lastSensorUpdate;
+  String get addToRestockingList;
+  String get addedToRestockingList;
+  String get updateFailed;
 }
 
 class _AppLocalizationsDelegate

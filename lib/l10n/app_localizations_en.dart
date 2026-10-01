@@ -51,4 +51,24 @@ class AppLocalizationsEn extends AppLocalizations {
   @override String get calibrateP2 => 'Calibrate Platform 2';
   @override String get calibrationComplete => 'Calibration completed successfully.';
   @override String get startCalibration => 'Start Calibration';
+  @override String get appearance => 'Appearance';
+  @override String get theme => 'Theme';
+  @override String get systemDefault => 'System default';
+  @override String get lightTheme => 'Light';
+  @override String get darkTheme => 'Dark';
+  @override String get categoryAutomotive => 'Automotive';
+  @override String get categoryElectronics => 'Electronics';
+  @override String get categoryHardware => 'Hardware';
+  @override String get categoryPackagedGoods => 'Packaged Goods';
+  @override String get categoryCleaningSupplies => 'Cleaning Supplies';
+  @override String get categoryOfficeSupplies => 'Office Supplies';
+  @override String get categoryOther => 'Other';
+  @override String get activePlatforms => 'Active platforms';
+  @override String get lowStockProducts => 'Low stock';
+  @override String get staleSensors => 'Stale sensors';
+  @override String get sensorDataStale => 'Sensor data is stale';
+  @override String get lastSensorUpdate => 'Last sensor update';
+  @override String get addToRestockingList => 'Add to restocking list';
+  @override String get addedToRestockingList => 'Added to the restocking list.';
+  @override String get updateFailed => 'The update could not be completed. Please try again.';
 }

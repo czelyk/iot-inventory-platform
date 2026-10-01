@@ -1,13 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:smart_kuhlschrank/l10n/app_localizations.dart';
 
 class NotificationsScreen extends StatefulWidget {
-  const NotificationsScreen({Key? key}) : super(key: key);
+  const NotificationsScreen({super.key});
 
   @override
   State<NotificationsScreen> createState() => _NotificationsScreenState();
@@ -26,8 +26,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   BluetoothCharacteristic? _writeCharacteristic;
   String _statusMessage = "";
 
+  bool get _isAndroid =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+
   Future<bool> _requestPermissions() async {
-    if (Platform.isAndroid) {
+    if (_isAndroid) {
       Map<Permission, PermissionStatus> statuses = await [
         Permission.bluetoothScan,
         Permission.bluetoothConnect,
@@ -49,6 +52,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     });
 
     if (!await _requestPermissions()) {
+      if (!mounted) return;
       setState(() {
         _isConnecting = false;
         _statusMessage = "Bluetooth izinleri verilmedi.";
@@ -56,6 +60,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       return;
     }
 
+    if (!mounted) return;
     setState(() => _statusMessage = "Cihaz aranıyor...");
 
     try {
@@ -87,11 +92,19 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           }
         });
 
-        _targetDevice = await completer.future.timeout(const Duration(seconds: 10), onTimeout: () => null);
-        await subscription.cancel();
+        try {
+          _targetDevice = await completer.future.timeout(
+            const Duration(seconds: 10),
+            onTimeout: () => null,
+          );
+        } finally {
+          await subscription.cancel();
+          await FlutterBluePlus.stopScan();
+        }
       }
 
       if (_targetDevice == null) {
+        if (!mounted) return;
         setState(() {
           _isConnecting = false;
           _statusMessage = "Cihaz bulunamadı. Lütfen ESP32'nin açık olduğundan emin olun.";
@@ -100,9 +113,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       }
 
       // 3. Bağlan (Zaten bağlıysa hata vermez)
+      if (!mounted) return;
       setState(() => _statusMessage = "Cihaza bağlanılıyor...");
       await _targetDevice!.connect(autoConnect: false).timeout(const Duration(seconds: 10));
       
+      if (!mounted) return;
       setState(() => _statusMessage = "Servisler keşfediliyor...");
       List<BluetoothService> services = await _targetDevice!.discoverServices();
       
@@ -117,19 +132,27 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         if (_writeCharacteristic != null) break;
       }
 
-      setState(() {
-        _isConnecting = false;
-        _statusMessage = _writeCharacteristic != null ? "Cihaz Hazır." : "Hata: Yazılabilir özellik bulunamadı.";
-      });
+      if (mounted) {
+        setState(() {
+          _isConnecting = false;
+          _statusMessage = _writeCharacteristic != null
+              ? "Cihaz Hazır."
+              : "Hata: Yazılabilir özellik bulunamadı.";
+        });
+      }
     } catch (e) {
-      setState(() {
-        _isConnecting = false;
-        _statusMessage = "Hata: $e";
-      });
+      _targetDevice = null;
+      _writeCharacteristic = null;
+      if (mounted) {
+        setState(() {
+          _isConnecting = false;
+          _statusMessage = "Hata: $e";
+        });
+      }
     }
   }
 
-  Future<void> _sendCommand(String command) async {
+  Future<bool> _sendCommand(String command) async {
     if (_writeCharacteristic == null) {
       await _findAndConnect();
     }
@@ -137,20 +160,30 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     if (_writeCharacteristic != null) {
       try {
         await _writeCharacteristic!.write(utf8.encode(command));
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Komut gönderildi: $command"), backgroundColor: Colors.green),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("Komut gönderildi: $command"),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+        return true;
       } catch (e) {
-        setState(() => _statusMessage = "Gönderim Hatası: $e");
+        if (mounted) {
+          setState(() => _statusMessage = "Gönderim Hatası: $e");
+        }
         _writeCharacteristic = null; // Bağlantı kopmuş olabilir, sıfırla
       }
     }
+    return false;
   }
 
   @override
   void dispose() {
-    // Sayfadan çıkınca bağlantıyı koparma (Opsiyonel: Uygulama yapısına göre kalabilir de)
-    // _targetDevice?.disconnect(); 
+    unawaited(FlutterBluePlus.stopScan());
+    final targetDevice = _targetDevice;
+    if (targetDevice != null) unawaited(targetDevice.disconnect());
     super.dispose();
   }
 
@@ -184,7 +217,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               title: l10n.emptyPlatforms,
               buttonLabel: l10n.setZero,
               icon: Icons.exposure_zero,
-              onPressed: () => _sendCommand("CAL:ZERO").then((_) => setState(() => _currentStep = 1)),
+              onPressed: () async {
+                if (await _sendCommand("CAL:ZERO") && mounted) {
+                  setState(() => _currentStep = 1);
+                }
+              },
               isActive: _currentStep >= 0,
               isCompleted: _currentStep > 0,
             ),
@@ -196,7 +233,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               title: l10n.place800gP1,
               buttonLabel: l10n.calibrateP1,
               icon: Icons.fitness_center,
-              onPressed: () => _sendCommand("CAL:P1:800").then((_) => setState(() => _currentStep = 2)),
+              onPressed: () async {
+                if (await _sendCommand("CAL:P1:800") && mounted) {
+                  setState(() => _currentStep = 2);
+                }
+              },
               isActive: _currentStep >= 1,
               isCompleted: _currentStep > 1,
             ),
@@ -208,7 +249,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               title: l10n.place800gP2,
               buttonLabel: l10n.calibrateP2,
               icon: Icons.fitness_center,
-              onPressed: () => _sendCommand("CAL:P2:800").then((_) => setState(() => _currentStep = 3)),
+              onPressed: () async {
+                if (await _sendCommand("CAL:P2:800") && mounted) {
+                  setState(() => _currentStep = 3);
+                }
+              },
               isActive: _currentStep >= 2,
               isCompleted: _currentStep > 2,
             ),

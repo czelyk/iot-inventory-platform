@@ -2,7 +2,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smart_kuhlschrank/providers/locale_provider.dart';
-import 'package:smart_kuhlschrank/services/geolocation_service.dart'; // Import the new service
 import 'package:smart_kuhlschrank/screens/login_screen.dart';
 import 'package:smart_kuhlschrank/main.dart';
 
@@ -14,7 +13,7 @@ class AuthGate extends StatefulWidget {
 }
 
 class _AuthGateState extends State<AuthGate> {
-  bool _isInitialDataLoaded = false;
+  String? _loadedUserId;
 
   @override
   Widget build(BuildContext context) {
@@ -26,21 +25,23 @@ class _AuthGateState extends State<AuthGate> {
         }
 
         if (snapshot.hasData) {
-          // If user is logged in, load initial data (locale, country, etc.)
-          if (!_isInitialDataLoaded) {
+          final userId = snapshot.data!.uid;
+          if (_loadedUserId != userId) {
+            _loadedUserId = userId;
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              // Load language preference from Firebase
+              if (!mounted) return;
               Provider.of<LocaleProvider>(context, listen: false).loadLocale();
-              
-              // Update user's country based on IP in the background
-              GeolocationService().updateUserCountry();
             });
-            _isInitialDataLoaded = true;
           }
           return const MainAppScreen();
         } else {
-          // If user is logged out, reset the flag
-          _isInitialDataLoaded = false;
+          if (_loadedUserId != null) {
+            _loadedUserId = null;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!mounted) return;
+              Provider.of<LocaleProvider>(context, listen: false).clearLocale();
+            });
+          }
           return const LoginScreen();
         }
       },

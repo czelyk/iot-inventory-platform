@@ -51,4 +51,24 @@ class AppLocalizationsDe extends AppLocalizations {
   @override String get calibrateP2 => 'Plattform 2 kalibrieren';
   @override String get calibrationComplete => 'Kalibrierung erfolgreich abgeschlossen.';
   @override String get startCalibration => 'Kalibrierung starten';
+  @override String get appearance => 'Darstellung';
+  @override String get theme => 'Design';
+  @override String get systemDefault => 'Systemstandard';
+  @override String get lightTheme => 'Hell';
+  @override String get darkTheme => 'Dunkel';
+  @override String get categoryAutomotive => 'Automobil';
+  @override String get categoryElectronics => 'Elektronik';
+  @override String get categoryHardware => 'Werkzeug und Beschläge';
+  @override String get categoryPackagedGoods => 'Verpackte Waren';
+  @override String get categoryCleaningSupplies => 'Reinigungsmittel';
+  @override String get categoryOfficeSupplies => 'Bürobedarf';
+  @override String get categoryOther => 'Sonstiges';
+  @override String get activePlatforms => 'Aktive Plattformen';
+  @override String get lowStockProducts => 'Niedriger Bestand';
+  @override String get staleSensors => 'Veraltete Sensoren';
+  @override String get sensorDataStale => 'Sensordaten sind veraltet';
+  @override String get lastSensorUpdate => 'Letzte Sensoraktualisierung';
+  @override String get addToRestockingList => 'Zur Nachbestellliste hinzufügen';
+  @override String get addedToRestockingList => 'Zur Nachbestellliste hinzugefügt.';
+  @override String get updateFailed => 'Die Aktualisierung konnte nicht abgeschlossen werden. Bitte versuchen Sie es erneut.';
 }

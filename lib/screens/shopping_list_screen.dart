@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:smart_kuhlschrank/l10n/app_localizations.dart';
 import '../models/shopping_item_model.dart';
 import '../services/shopping_list_service.dart';
+import '../utils/inventory_categories.dart';
 
 class ShoppingListScreen extends StatefulWidget {
-  const ShoppingListScreen({Key? key}) : super(key: key);
+  const ShoppingListScreen({super.key});
 
   @override
   State<ShoppingListScreen> createState() => _ShoppingListScreenState();
@@ -13,91 +14,121 @@ class ShoppingListScreen extends StatefulWidget {
 class _ShoppingListScreenState extends State<ShoppingListScreen> {
   final ShoppingListService _shoppingListService = ShoppingListService();
 
-  // General-purpose inventory categories.
-  final Map<String, IconData> _categories = {
-    'Automotive': Icons.directions_car,
-    'Electronics': Icons.memory,
-    'Hardware': Icons.handyman,
-    'Packaged Goods': Icons.inventory_2,
-    'Cleaning Supplies': Icons.cleaning_services,
-    'Office Supplies': Icons.business_center,
-    'Other': Icons.shopping_bag,
-  };
-
-  void _showAddItemDialog(BuildContext context) {
+  Future<void> _showAddItemDialog(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
-    final TextEditingController nameController = TextEditingController();
-    String selectedCategory = 'Other'; // Varsayılan kategori
+    final nameController = TextEditingController();
+    var selectedCategory = 'Other';
+    var isSaving = false;
 
-    showDialog(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              title: Text(l10n.addNewItem),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // İsim Girişi
-                  TextField(
-                    controller: nameController,
-                    decoration: InputDecoration(
-                      labelText: l10n.itemName,
-                      prefixIcon: const Icon(Icons.edit),
+    try {
+      await showDialog<void>(
+        context: context,
+        builder: (dialogContext) {
+          return StatefulBuilder(
+            builder: (context, setDialogState) {
+              return AlertDialog(
+                title: Text(l10n.addNewItem),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: nameController,
+                      decoration: InputDecoration(
+                        labelText: l10n.itemName,
+                        prefixIcon: const Icon(Icons.edit),
+                      ),
+                      autofocus: true,
                     ),
-                    autofocus: true,
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      value: selectedCategory,
+                      decoration: InputDecoration(
+                        labelText: l10n.category,
+                        border: const OutlineInputBorder(),
+                      ),
+                      items: InventoryCategories.values.map((category) {
+                        return DropdownMenuItem<String>(
+                          value: category,
+                          child: Row(
+                            children: [
+                              Icon(
+                                InventoryCategories.iconFor(category),
+                                color: Colors.teal,
+                              ),
+                              const SizedBox(width: 10),
+                              Text(
+                                InventoryCategories.labelFor(category, l10n),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (newValue) {
+                        if (newValue != null) {
+                          setDialogState(() => selectedCategory = newValue);
+                        }
+                      },
+                    ),
+                  ],
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: isSaving
+                        ? null
+                        : () => Navigator.of(dialogContext).pop(),
+                    child: Text(l10n.cancel),
                   ),
-                  const SizedBox(height: 16),
-                  
-                  // Kategori Seçimi
-                  DropdownButtonFormField<String>(
-                    value: selectedCategory,
-                    decoration: InputDecoration(
-                      labelText: l10n.category,
-                      border: const OutlineInputBorder(),
-                    ),
-                    items: _categories.keys.map((String category) {
-                      return DropdownMenuItem<String>(
-                        value: category,
-                        child: Row(
-                          children: [
-                            Icon(_categories[category], color: Colors.teal),
-                            const SizedBox(width: 10),
-                            Text(category),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        selectedCategory = newValue!;
-                      });
-                    },
+                  ElevatedButton(
+                    onPressed: isSaving
+                        ? null
+                        : () async {
+                            final name = nameController.text.trim();
+                            if (name.isEmpty) return;
+
+                            setDialogState(() => isSaving = true);
+                            try {
+                              await _shoppingListService.addItem(
+                                name,
+                                selectedCategory,
+                              );
+                              if (dialogContext.mounted) {
+                                Navigator.of(dialogContext).pop();
+                              }
+                            } catch (_) {
+                              if (!dialogContext.mounted) return;
+                              setDialogState(() => isSaving = false);
+                              ScaffoldMessenger.of(dialogContext).showSnackBar(
+                                SnackBar(content: Text(l10n.updateFailed)),
+                              );
+                            }
+                          },
+                    child: isSaving
+                        ? const SizedBox.square(
+                            dimension: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Text(l10n.add),
                   ),
                 ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: Text(l10n.cancel),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    final name = nameController.text.trim();
-                    if (name.isNotEmpty) {
-                      _shoppingListService.addItem(name, selectedCategory); // Kategorili ekleme
-                      Navigator.of(context).pop();
-                    }
-                  },
-                  child: Text(l10n.add),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
+              );
+            },
+          );
+        },
+      );
+    } finally {
+      nameController.dispose();
+    }
+  }
+
+  Future<void> _runUpdate(Future<void> Function() operation) async {
+    try {
+      await operation();
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context)!.updateFailed)),
+      );
+    }
   }
 
   @override
@@ -118,14 +149,23 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
             return Center(child: Text('${l10n.error}: ${snapshot.error}'));
           }
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.shopping_cart_outlined, size: 80, color: Colors.grey),
-                SizedBox(height: 16),
-                Text(l10n.yourShoppingListIsEmpty, style: TextStyle(fontSize: 18, color: Colors.grey)),
-              ],
-            ));
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.shopping_cart_outlined,
+                    size: 80,
+                    color: Colors.grey,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    l10n.yourShoppingListIsEmpty,
+                    style: const TextStyle(fontSize: 18, color: Colors.grey),
+                  ),
+                ],
+              ),
+            );
           }
 
           final items = snapshot.data!;
@@ -144,14 +184,21 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                     activeColor: Colors.teal,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                     onChanged: (bool? value) {
-                      _shoppingListService.toggleItemStatus(item.id, value ?? false);
+                      _runUpdate(
+                        () => _shoppingListService.toggleItemStatus(
+                          item.id,
+                          value ?? false,
+                        ),
+                      );
                     },
                   ),
                   title: Text(
                     item.name,
                     style: TextStyle(
                       decoration: item.isBought ? TextDecoration.lineThrough : null,
-                      color: item.isBought ? Colors.grey : Colors.black87,
+                      color: item.isBought
+                          ? Colors.grey
+                          : Theme.of(context).colorScheme.onSurface,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -159,17 +206,22 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                   subtitle: Row(
                     children: [
                       Icon(
-                        _categories[item.category] ?? Icons.shopping_bag, 
+                        InventoryCategories.iconFor(item.category),
                         size: 14, 
                         color: Colors.grey
                       ),
                       const SizedBox(width: 4),
-                      Text(item.category, style: const TextStyle(fontSize: 12)),
+                      Text(
+                        InventoryCategories.labelFor(item.category, l10n),
+                        style: const TextStyle(fontSize: 12),
+                      ),
                     ],
                   ),
                   trailing: IconButton(
                     icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
-                    onPressed: () => _shoppingListService.deleteItem(item.id),
+                    onPressed: () => _runUpdate(
+                      () => _shoppingListService.deleteItem(item.id),
+                    ),
                   ),
                 ),
               );

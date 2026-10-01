@@ -3,7 +3,7 @@ import 'package:smart_kuhlschrank/services/auth_service.dart';
 import 'package:smart_kuhlschrank/l10n/app_localizations.dart'; // Import the l10n library
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -19,7 +19,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _submit() async {
     setState(() => _isLoading = true);
     final email = _emailController.text.trim();
-    final password = _passwordController.text.trim();
+    final password = _passwordController.text;
     String? error;
 
     try {
@@ -32,6 +32,7 @@ class _LoginScreenState extends State<LoginScreen> {
       error = e.toString();
     }
 
+    if (!mounted) return;
     setState(() => _isLoading = false);
 
     if (error != null) {
@@ -39,6 +40,13 @@ class _LoginScreenState extends State<LoginScreen> {
         SnackBar(content: Text(error)),
       );
     }
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 
   @override
@@ -97,7 +105,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               const SizedBox(height: 16),
               TextButton(
-                onPressed: () {
+                onPressed: _isLoading ? null : () {
                   setState(() => _isLogin = !_isLogin);
                 },
                 child: Text(_isLogin

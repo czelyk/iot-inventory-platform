@@ -136,7 +136,9 @@ These are examples; the platform is not tied to one product category.
 - Real-time product weight display.
 - Configurable product name, category, unit weight, and minimum stock threshold.
 - Noise-aware estimated quantity and stock status.
-- General-purpose restocking list.
+- Active-platform dashboard with low-stock and stale-sensor summaries.
+- One-tap, duplicate-safe transfer of low-stock products to the restocking list.
+- General-purpose restocking list with pending-first ordering.
 - English, Turkish, and German mobile localization.
 - Light/dark theme selection.
 

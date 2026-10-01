@@ -23,6 +23,7 @@ class InventoryService {
     return collection.snapshots().map((snapshot) {
       final products = snapshot.docs
           .map(InventoryProduct.fromFirestore)
+          .where((product) => product.isActive)
           .toList(growable: false);
       products.sort((a, b) => a.id.compareTo(b.id));
       return products;

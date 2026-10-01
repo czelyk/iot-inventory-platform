@@ -51,4 +51,24 @@ class AppLocalizationsTr extends AppLocalizations {
   @override String get calibrateP2 => "Platform 2'yi Kalibre Et";
   @override String get calibrationComplete => 'Kalibrasyon başarıyla tamamlandı.';
   @override String get startCalibration => 'Kalibrasyonu Başlat';
+  @override String get appearance => 'Görünüm';
+  @override String get theme => 'Tema';
+  @override String get systemDefault => 'Sistem varsayılanı';
+  @override String get lightTheme => 'Açık';
+  @override String get darkTheme => 'Koyu';
+  @override String get categoryAutomotive => 'Otomotiv';
+  @override String get categoryElectronics => 'Elektronik';
+  @override String get categoryHardware => 'Hırdavat';
+  @override String get categoryPackagedGoods => 'Paketli Ürünler';
+  @override String get categoryCleaningSupplies => 'Temizlik Malzemeleri';
+  @override String get categoryOfficeSupplies => 'Ofis Malzemeleri';
+  @override String get categoryOther => 'Diğer';
+  @override String get activePlatforms => 'Aktif platform';
+  @override String get lowStockProducts => 'Düşük stok';
+  @override String get staleSensors => 'Güncel olmayan sensör';
+  @override String get sensorDataStale => 'Sensör verisi güncel değil';
+  @override String get lastSensorUpdate => 'Son sensör güncellemesi';
+  @override String get addToRestockingList => 'Tedarik listesine ekle';
+  @override String get addedToRestockingList => 'Tedarik listesine eklendi.';
+  @override String get updateFailed => 'Güncelleme tamamlanamadı. Lütfen tekrar deneyin.';
 }

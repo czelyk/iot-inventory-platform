@@ -3,6 +3,8 @@ import 'package:smart_kuhlschrank/l10n/app_localizations.dart';
 
 import '../models/product_model.dart';
 import '../services/inventory_service.dart';
+import '../services/shopping_list_service.dart';
+import '../utils/inventory_categories.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -13,16 +15,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final InventoryService _inventoryService = InventoryService();
-
-  final Map<String, IconData> _categories = const {
-    'Automotive': Icons.directions_car,
-    'Electronics': Icons.memory,
-    'Hardware': Icons.handyman,
-    'Packaged Goods': Icons.inventory_2,
-    'Cleaning Supplies': Icons.cleaning_services,
-    'Office Supplies': Icons.business_center,
-    'Other': Icons.category,
-  };
+  final ShoppingListService _shoppingListService = ShoppingListService();
+  final Set<String> _addingToRestock = {};
 
   Future<void> _showEditDialog(
     BuildContext context,
@@ -38,9 +32,10 @@ class _HomeScreenState extends State<HomeScreen> {
     final thresholdController = TextEditingController(
       text: product.minimumStockThreshold?.toString() ?? '',
     );
-    var selectedCategory = _categories.containsKey(product.category)
+    var selectedCategory = InventoryCategories.values.contains(product.category)
         ? product.category
         : 'Other';
+    var isSaving = false;
 
     await showDialog<void>(
       context: context,
@@ -69,14 +64,21 @@ class _HomeScreenState extends State<HomeScreen> {
                         labelText: l10n.category,
                         border: const OutlineInputBorder(),
                       ),
-                      items: _categories.keys.map((category) {
+                      items: InventoryCategories.values.map((category) {
                         return DropdownMenuItem(
                           value: category,
                           child: Row(
                             children: [
-                              Icon(_categories[category], color: Colors.teal),
+                              Icon(
+                                InventoryCategories.iconFor(category),
+                                color: Colors.teal,
+                              ),
                               const SizedBox(width: 10),
-                              Flexible(child: Text(category)),
+                              Flexible(
+                                child: Text(
+                                  InventoryCategories.labelFor(category, l10n),
+                                ),
+                              ),
                             ],
                           ),
                         );
@@ -114,11 +116,15 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               actions: [
                 TextButton(
-                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  onPressed: isSaving
+                      ? null
+                      : () => Navigator.of(dialogContext).pop(),
                   child: Text(l10n.cancel),
                 ),
                 ElevatedButton(
-                  onPressed: () async {
+                  onPressed: isSaving
+                      ? null
+                      : () async {
                     final name = nameController.text.trim();
                     final unitWeightGrams = _parsePositiveDouble(
                       unitWeightController.text,
@@ -138,21 +144,35 @@ class _HomeScreenState extends State<HomeScreen> {
                       return;
                     }
 
-                    await _inventoryService.updateProduct(
-                      productId: product.id,
-                      name: name,
-                      category: selectedCategory,
-                      unitWeightKg: unitWeightGrams == null
-                          ? null
-                          : unitWeightGrams / 1000,
-                      minimumStockThreshold: threshold,
-                    );
+                    setDialogState(() => isSaving = true);
+                    try {
+                      await _inventoryService.updateProduct(
+                        productId: product.id,
+                        name: name,
+                        category: selectedCategory,
+                        unitWeightKg: unitWeightGrams == null
+                            ? null
+                            : unitWeightGrams / 1000,
+                        minimumStockThreshold: threshold,
+                      );
 
-                    if (dialogContext.mounted) {
-                      Navigator.of(dialogContext).pop();
+                      if (dialogContext.mounted) {
+                        Navigator.of(dialogContext).pop();
+                      }
+                    } catch (_) {
+                      if (!dialogContext.mounted) return;
+                      setDialogState(() => isSaving = false);
+                      ScaffoldMessenger.of(dialogContext).showSnackBar(
+                        SnackBar(content: Text(l10n.updateFailed)),
+                      );
                     }
                   },
-                  child: Text(l10n.save),
+                  child: isSaving
+                      ? const SizedBox.square(
+                          dimension: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : Text(l10n.save),
                 ),
               ],
             );
@@ -178,6 +198,31 @@ class _HomeScreenState extends State<HomeScreen> {
     return parsed != null && parsed >= 0 ? parsed : null;
   }
 
+  Future<void> _addToRestockingList(InventoryProduct product) async {
+    final l10n = AppLocalizations.of(context)!;
+    setState(() => _addingToRestock.add(product.id));
+    try {
+      await _shoppingListService.addInventoryProduct(
+        productId: product.id,
+        name: product.name,
+        category: product.category,
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.addedToRestockingList)),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.updateFailed)),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _addingToRestock.remove(product.id));
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -197,15 +242,37 @@ class _HomeScreenState extends State<HomeScreen> {
             return Center(child: Text(l10n.noProductsFound));
           }
 
+          final products = snapshot.data!;
+          final now = DateTime.now();
+          final lowStockCount = products
+              .where(
+                (product) =>
+                    product.isLowStock == true &&
+                    !product.isMeasurementStaleAt(now),
+              )
+              .length;
+          final staleCount = products
+              .where((product) => product.isMeasurementStaleAt(now))
+              .length;
+
           return ListView.builder(
             padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: snapshot.data!.length,
+            itemCount: products.length + 1,
             itemBuilder: (context, index) {
-              final product = snapshot.data![index];
+              if (index == 0) {
+                return _InventorySummary(
+                  platformCount: products.length,
+                  lowStockCount: lowStockCount,
+                  staleCount: staleCount,
+                );
+              }
+              final product = products[index - 1];
               return _ProductCard(
                 product: product,
-                icon: _categories[product.category] ?? Icons.category,
+                icon: InventoryCategories.iconFor(product.category),
                 onEdit: () => _showEditDialog(context, product),
+                isAddingToRestock: _addingToRestock.contains(product.id),
+                onAddToRestock: () => _addToRestockingList(product),
               );
             },
           );
@@ -215,15 +282,112 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
+class _InventorySummary extends StatelessWidget {
+  final int platformCount;
+  final int lowStockCount;
+  final int staleCount;
+
+  const _InventorySummary({
+    required this.platformCount,
+    required this.lowStockCount,
+    required this.staleCount,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+      child: Row(
+        children: [
+          Expanded(
+            child: _SummaryTile(
+              icon: Icons.sensors,
+              value: platformCount,
+              label: l10n.activePlatforms,
+              color: Colors.teal,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: _SummaryTile(
+              icon: Icons.warning_amber,
+              value: lowStockCount,
+              label: l10n.lowStockProducts,
+              color: lowStockCount > 0 ? Colors.red : Colors.green,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: _SummaryTile(
+              icon: Icons.cloud_off,
+              value: staleCount,
+              label: l10n.staleSensors,
+              color: staleCount > 0 ? Colors.orange : Colors.green,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SummaryTile extends StatelessWidget {
+  final IconData icon;
+  final int value;
+  final String label;
+  final Color color;
+
+  const _SummaryTile({
+    required this.icon,
+    required this.value,
+    required this.label,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+        child: Column(
+          children: [
+            Icon(icon, color: color),
+            const SizedBox(height: 4),
+            Text(
+              value.toString(),
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: color,
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            Text(
+              label,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _ProductCard extends StatelessWidget {
   final InventoryProduct product;
   final IconData icon;
   final VoidCallback onEdit;
+  final VoidCallback onAddToRestock;
+  final bool isAddingToRestock;
 
   const _ProductCard({
     required this.product,
     required this.icon,
     required this.onEdit,
+    required this.onAddToRestock,
+    required this.isAddingToRestock,
   });
 
   @override
@@ -231,16 +395,28 @@ class _ProductCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final quantity = product.estimatedQuantity;
     final lowStock = product.isLowStock;
-    final statusColor = lowStock == null
-        ? Colors.blueGrey
-        : lowStock
-            ? Colors.red
-            : Colors.green;
-    final statusLabel = lowStock == null
-        ? l10n.thresholdNotConfigured
-        : lowStock
-            ? l10n.lowStock
-            : l10n.stockOk;
+    final isStale = product.isMeasurementStaleAt(DateTime.now());
+    final statusColor = isStale
+        ? Colors.orange
+        : lowStock == null
+            ? Colors.blueGrey
+            : lowStock
+                ? Colors.red
+                : Colors.green;
+    final statusLabel = isStale
+        ? l10n.sensorDataStale
+        : lowStock == null
+            ? l10n.thresholdNotConfigured
+            : lowStock
+                ? l10n.lowStock
+                : l10n.stockOk;
+    final lastUpdated = product.lastUpdated?.toLocal();
+    final materialL10n = MaterialLocalizations.of(context);
+    final lastUpdatedLabel = lastUpdated == null
+        ? null
+        : '${l10n.lastSensorUpdate}: '
+            '${materialL10n.formatMediumDate(lastUpdated)} '
+            '${materialL10n.formatTimeOfDay(TimeOfDay.fromDateTime(lastUpdated))}';
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
@@ -269,7 +445,8 @@ class _ProductCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '${product.category} • ${product.id}',
+                    '${InventoryCategories.labelFor(product.category, l10n)} '
+                    '• ${product.id}',
                     style: TextStyle(color: Colors.teal.shade700),
                   ),
                   const SizedBox(height: 10),
@@ -293,6 +470,26 @@ class _ProductCard extends StatelessWidget {
                       ),
                     ],
                   ),
+                  if (lastUpdatedLabel != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      lastUpdatedLabel,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                  if (lowStock == true && !isStale) ...[
+                    const SizedBox(height: 8),
+                    TextButton.icon(
+                      onPressed: isAddingToRestock ? null : onAddToRestock,
+                      icon: isAddingToRestock
+                          ? const SizedBox.square(
+                              dimension: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.add_shopping_cart),
+                      label: Text(l10n.addToRestockingList),
+                    ),
+                  ],
                 ],
               ),
             ),

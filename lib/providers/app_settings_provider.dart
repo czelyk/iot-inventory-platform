@@ -18,7 +18,9 @@ class AppSettingsProvider extends ChangeNotifier {
     
     // Temayı yükle
     final themeIndex = prefs.getInt(_themeKey) ?? ThemeMode.system.index;
-    _themeMode = ThemeMode.values[themeIndex];
+    _themeMode = themeIndex >= 0 && themeIndex < ThemeMode.values.length
+        ? ThemeMode.values[themeIndex]
+        : ThemeMode.system;
     
     notifyListeners();
   }

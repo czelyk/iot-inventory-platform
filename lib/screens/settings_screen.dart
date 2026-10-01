@@ -17,11 +17,10 @@ class SettingsScreen extends StatelessWidget {
       ),
       body: ListView(
         children: [
-          // --- Appearance Section ---
-          _buildSectionHeader(context, l10n.appearance), // Hardcoded 'Appearance' until l10n update
+          _buildSectionHeader(context, l10n.appearance),
           ListTile(
             leading: const Icon(Icons.brightness_6),
-            title: Text(l10n.theme), // Using 'theme' from l10n if available or hardcode fallbacks
+            title: Text(l10n.theme),
             subtitle: Text(_getThemeModeName(settings.themeMode, context)),
             trailing: DropdownButton<ThemeMode>(
               value: settings.themeMode,
@@ -33,15 +32,15 @@ class SettingsScreen extends StatelessWidget {
               items: [
                 DropdownMenuItem(
                   value: ThemeMode.system,
-                  child: Text(l10n.systemDefault), // 'System Default'
+                  child: Text(l10n.systemDefault),
                 ),
                 DropdownMenuItem(
                   value: ThemeMode.light,
-                  child: Text(l10n.lightTheme), // 'Light Theme'
+                  child: Text(l10n.lightTheme),
                 ),
                 DropdownMenuItem(
                   value: ThemeMode.dark,
-                  child: Text(l10n.darkTheme), // 'Dark Theme'
+                  child: Text(l10n.darkTheme),
                 ),
               ],
             ),
@@ -73,15 +72,4 @@ class SettingsScreen extends StatelessWidget {
       case ThemeMode.dark: return l10n.darkTheme;
     }
   }
-}
-
-// Temporary extensions for l10n to avoid compilation errors if keys are missing
-// You should add these to your arb files properly.
-extension L10nExtras on AppLocalizations {
-  String get appearance => 'Appearance'; // Placeholder
-  String get theme => 'Theme';
-  String get systemDefault => 'System Default';
-  String get lightTheme => 'Light';
-  String get darkTheme => 'Dark';
-  
 }
