@@ -2,11 +2,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.example.smart_kuhlschrank">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <!-- Bluetooth Permissions for Android 11 and below -->
     <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"
+                     android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"
+                     android:maxSdkVersion="30" />
     
     <!-- Bluetooth Permissions for Android 12 and above -->
     <!-- 'neverForLocation' flag is crucial for scanning without physical location enabled -->
@@ -22,7 +26,10 @@
     <application
         android:label="Inventory Monitoring"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:allowBackup="false"
+        android:fullBackupContent="false"
+        android:usesCleartextTraffic="false">
 
         <activity
             android:name=".MainActivity"

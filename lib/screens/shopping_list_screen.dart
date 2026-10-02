@@ -3,6 +3,7 @@ import 'package:smart_kuhlschrank/l10n/app_localizations.dart';
 import '../models/shopping_item_model.dart';
 import '../services/shopping_list_service.dart';
 import '../utils/inventory_categories.dart';
+import '../utils/input_validation.dart';
 
 class ShoppingListScreen extends StatefulWidget {
   const ShoppingListScreen({super.key});
@@ -33,6 +34,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                   children: [
                     TextField(
                       controller: nameController,
+                      maxLength: InputValidation.maxNameLength,
                       decoration: InputDecoration(
                         labelText: l10n.itemName,
                         prefixIcon: const Icon(Icons.edit),
@@ -146,7 +148,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-            return Center(child: Text('${l10n.error}: ${snapshot.error}'));
+            return Center(child: Text(l10n.updateFailed));
           }
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return Center(

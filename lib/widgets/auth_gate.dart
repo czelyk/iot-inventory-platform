@@ -24,8 +24,9 @@ class _AuthGateState extends State<AuthGate> {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (snapshot.hasData) {
-          final userId = snapshot.data!.uid;
+        final user = snapshot.data;
+        if (user != null && user.emailVerified) {
+          final userId = user.uid;
           if (_loadedUserId != userId) {
             _loadedUserId = userId;
             WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -35,6 +36,11 @@ class _AuthGateState extends State<AuthGate> {
           }
           return const MainAppScreen();
         } else {
+          if (user != null) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              FirebaseAuth.instance.signOut();
+            });
+          }
           if (_loadedUserId != null) {
             _loadedUserId = null;
             WidgetsBinding.instance.addPostFrameCallback((_) {

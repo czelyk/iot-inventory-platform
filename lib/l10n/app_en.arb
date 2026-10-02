@@ -67,5 +67,14 @@
   "lastSensorUpdate": "Last sensor update",
   "addToRestockingList": "Add to restocking list",
   "addedToRestockingList": "Added to the restocking list.",
-  "updateFailed": "The update could not be completed. Please try again."
+  "updateFailed": "The update could not be completed. Please try again.",
+  "authInvalidCredentials": "Email or password is incorrect.",
+  "authInvalidEmail": "Enter a valid email address.",
+  "authWeakPassword": "Use a password with at least 8 characters.",
+  "authRegistrationUnavailable": "Registration could not be completed. Try signing in or resetting your password.",
+  "authVerificationRequired": "Verify your email before signing in. A new verification email was requested.",
+  "authTooManyRequests": "Too many attempts. Please wait and try again.",
+  "authNetworkError": "Check your internet connection and try again.",
+  "authUnknownError": "Authentication could not be completed. Please try again.",
+  "registrationEmailSent": "Check your email to verify your account, then sign in."
 }

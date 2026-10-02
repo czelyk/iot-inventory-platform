@@ -89,6 +89,15 @@ abstract class AppLocalizations {
   String get addToRestockingList;
   String get addedToRestockingList;
   String get updateFailed;
+  String get authInvalidCredentials;
+  String get authInvalidEmail;
+  String get authWeakPassword;
+  String get authRegistrationUnavailable;
+  String get authVerificationRequired;
+  String get authTooManyRequests;
+  String get authNetworkError;
+  String get authUnknownError;
+  String get registrationEmailSent;
 }
 
 class _AppLocalizationsDelegate

@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:smart_kuhlschrank/l10n/app_localizations.dart';
 
 class NotificationsScreen extends StatefulWidget {
@@ -14,6 +16,12 @@ class NotificationsScreen extends StatefulWidget {
 }
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
+  static const String _serviceUuid =
+      '6E400001-B5A3-F393-E0A9-E50E24DCCA9E';
+  static const String _writeUuid =
+      '6E400002-B5A3-F393-E0A9-E50E24DCCA9E';
+  static const String _identityUuid =
+      '6E400003-B5A3-F393-E0A9-E50E24DCCA9E';
   static const Set<String> _supportedDeviceNames = {
     'Inventory Platform ESP32',
     // Backward compatibility for devices that have not received new firmware.
@@ -122,14 +130,42 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       List<BluetoothService> services = await _targetDevice!.discoverServices();
       
       _writeCharacteristic = null;
-      for (var service in services) {
-        for (var c in service.characteristics) {
-          if (c.properties.write || c.properties.writeWithoutResponse) {
-            _writeCharacteristic = c;
-            break;
+      final matchingServices = services.where(
+        (service) => service.uuid.toString().toUpperCase() == _serviceUuid,
+      );
+      if (matchingServices.length == 1) {
+        final characteristics = matchingServices.single.characteristics;
+        final matchingCharacteristics = characteristics.where(
+          (characteristic) =>
+              characteristic.uuid.toString().toUpperCase() == _writeUuid &&
+              characteristic.properties.write,
+        );
+        final identityCharacteristics = characteristics.where(
+          (characteristic) =>
+              characteristic.uuid.toString().toUpperCase() == _identityUuid &&
+              characteristic.properties.read,
+        );
+        if (matchingCharacteristics.length == 1 &&
+            identityCharacteristics.length == 1) {
+          final identityValue = utf8.decode(
+            await identityCharacteristics.single.read(),
+            allowMalformed: false,
+          );
+          final identity = RegExp(r'^DEVICE:([A-F0-9]{32})$')
+              .firstMatch(identityValue.trim());
+          final user = FirebaseAuth.instance.currentUser;
+          if (identity != null && user != null && user.emailVerified) {
+            final device = await FirebaseFirestore.instance
+                .collection('users')
+                .doc(user.uid)
+                .collection('devices')
+                .doc(identity.group(1)!)
+                .get();
+            if (device.exists && device.data()?['status'] == 'active') {
+              _writeCharacteristic = matchingCharacteristics.single;
+            }
           }
         }
-        if (_writeCharacteristic != null) break;
       }
 
       if (mounted) {
@@ -140,13 +176,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               : "Hata: Yazılabilir özellik bulunamadı.";
         });
       }
-    } catch (e) {
+    } catch (_) {
       _targetDevice = null;
       _writeCharacteristic = null;
       if (mounted) {
         setState(() {
           _isConnecting = false;
-          _statusMessage = "Hata: $e";
+          _statusMessage = "Güvenli Bluetooth bağlantısı kurulamadı.";
         });
       }
     }
@@ -169,9 +205,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           );
         }
         return true;
-      } catch (e) {
+      } catch (_) {
         if (mounted) {
-          setState(() => _statusMessage = "Gönderim Hatası: $e");
+          setState(() => _statusMessage = "Komut güvenli biçimde gönderilemedi.");
         }
         _writeCharacteristic = null; // Bağlantı kopmuş olabilir, sıfırla
       }

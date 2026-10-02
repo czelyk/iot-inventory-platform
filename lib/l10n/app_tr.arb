@@ -67,5 +67,14 @@
   "lastSensorUpdate": "Son sensör güncellemesi",
   "addToRestockingList": "Tedarik listesine ekle",
   "addedToRestockingList": "Tedarik listesine eklendi.",
-  "updateFailed": "Güncelleme tamamlanamadı. Lütfen tekrar deneyin."
+  "updateFailed": "Güncelleme tamamlanamadı. Lütfen tekrar deneyin.",
+  "authInvalidCredentials": "E-posta veya şifre hatalı.",
+  "authInvalidEmail": "Geçerli bir e-posta adresi girin.",
+  "authWeakPassword": "En az 8 karakterli bir şifre kullanın.",
+  "authRegistrationUnavailable": "Kayıt tamamlanamadı. Oturum açmayı veya şifrenizi sıfırlamayı deneyin.",
+  "authVerificationRequired": "Oturum açmadan önce e-postanızı doğrulayın. Yeni bir doğrulama e-postası istendi.",
+  "authTooManyRequests": "Çok fazla deneme yapıldı. Bekleyip tekrar deneyin.",
+  "authNetworkError": "İnternet bağlantınızı kontrol edip tekrar deneyin.",
+  "authUnknownError": "Kimlik doğrulama tamamlanamadı. Lütfen tekrar deneyin.",
+  "registrationEmailSent": "Hesabınızı doğrulamak için e-postanızı kontrol edin, ardından oturum açın."
 }

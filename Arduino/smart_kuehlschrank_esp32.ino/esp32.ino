@@ -1,114 +1,184 @@
-/************************************************************
- * PART 1 – AHMET
- * This part was implemented by Ahmet.
- * Responsibilities:
- * - Global configuration
- * - WiFi & Firebase initialization
- * - Assembly usage in WiFi connection logic
- ************************************************************/
-
 #include <Arduino.h>
+#include <esp_system.h>
+#include <esp_arduino_version.h>
 #include <WiFi.h>
 #include <Firebase_ESP_Client.h>
 #include "HX711.h"
 #include <time.h>
 #include <Preferences.h>
+#include <BLEDevice.h>
+#include <BLEUtils.h>
+#include <BLEServer.h>
+#include <BLESecurity.h>
 
-// ===== GLOBAL SETTINGS =====
+// Firebase API keys identify the Firebase project; they are not credentials.
+// Restrict this key to the required Firebase APIs in Google Cloud Console.
 #define API_KEY "AIzaSyAMHeRwya8gQiK7-5u1557chofAv-gZTWk"
 #define FIREBASE_PROJECT_ID "smart-kuehlschrank81"
 
-// --- HX711 Pins ---
 #define SCK_PIN 6
 #define P1_DOUT 4
 #define P2_DOUT 5
-
+#define PAIRING_BUTTON_PIN 0
 #define SEND_INTERVAL_MS 30000UL
+
+#define BLE_SERVICE_UUID           "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
+#define BLE_CHARACTERISTIC_UUID_RX "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
+#define BLE_CHARACTERISTIC_UUID_ID "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
 
 FirebaseData fbdo;
 FirebaseAuth auth;
 FirebaseConfig config;
-
 Preferences preferences;
-String userId = "";
-unsigned long lastSendTime = 0;
+HX711 scale1;
+HX711 scale2;
 
-// ===== ASSEMBLY (Ahmet) =====
-// Assembly is used to increment the WiFi retry counter manually
-void connectWiFiWithAssembly(String ssid, String pass) {
+String userId = "";
+String deviceEmail = "";
+String devicePassword = "";
+String pairingDeviceId = "";
+float CAL1 = 420.0;
+float CAL2 = 420.0;
+unsigned long lastSendTime = 0;
+bool firebaseConfigured = false;
+bool provisioningAllowed = false;
+bool restartRequested = false;
+uint32_t pairingPin = 0;
+
+void connectWiFiWithAssembly(const String &ssid, const String &pass) {
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid.c_str(), pass.c_str());
-  Serial.print("Connecting to WiFi: " + ssid);
+  Serial.print("Connecting to WiFi");
 
   int counter = 0;
   while (WiFi.status() != WL_CONNECTED && counter < 20) {
     delay(500);
     Serial.print(".");
-
-    // addi = add immediate (RISC-style)
     asm volatile (
       "addi %0, %0, 1"
       : "+r"(counter)
     );
   }
+  Serial.println();
 }
 
-/************************************************************
- * PART 2 – TOBIAS
- * This part was implemented by Tobias.
- * Responsibilities:
- * - Bluetooth Low Energy (BLE)
- * - User configuration via BLE
- * - Sensor calibration logic
- ************************************************************/
+String getOrCreatePairingDeviceId() {
+  String value = preferences.getString("pairing_id", "");
+  if (value.length() == 32) return value;
 
-#include <BLEDevice.h>
-#include <BLEUtils.h>
-#include <BLEServer.h>
+  uint8_t randomBytes[16];
+  esp_fill_random(randomBytes, sizeof(randomBytes));
+  const char hex[] = "0123456789ABCDEF";
+  value.reserve(32);
+  for (size_t i = 0; i < sizeof(randomBytes); i++) {
+    value += hex[randomBytes[i] >> 4];
+    value += hex[randomBytes[i] & 0x0F];
+  }
+  preferences.putString("pairing_id", value);
+  return value;
+}
 
-#define BLE_SERVICE_UUID           "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
-#define BLE_CHARACTERISTIC_UUID_RX "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
+uint32_t getOrCreatePairingPin() {
+  uint32_t value = preferences.getUInt("pairing_pin", 0);
+  if (value >= 100000 && value <= 999999) return value;
+  value = 100000 + (esp_random() % 900000);
+  preferences.putUInt("pairing_pin", value);
+  return value;
+}
 
-HX711 scale1;
-HX711 scale2;
-float CAL1 = 420.0;
-float CAL2 = 420.0;
+void rotatePairingPin() {
+  const uint32_t nextPin = 100000 + (esp_random() % 900000);
+  preferences.putUInt("pairing_pin", nextPin);
+}
 
-// ===== BLE CALLBACKS (Tobias) =====
-class MyCallbacks : public BLECharacteristicCallbacks {
-  void onWrite(BLECharacteristic *pCharacteristic) {
-    std::string value = pCharacteristic->getValue();
+bool isSafeCredentialValue(const String &value, size_t minLength, size_t maxLength) {
+  if (value.length() < minLength || value.length() > maxLength) return false;
+  for (size_t i = 0; i < value.length(); i++) {
+    const char c = value.charAt(i);
+    const bool allowed =
+      (c >= 'a' && c <= 'z') ||
+      (c >= 'A' && c <= 'Z') ||
+      (c >= '0' && c <= '9') ||
+      c == '-' || c == '_' || c == '.' || c == '@' || c == '~';
+    if (!allowed) return false;
+  }
+  return true;
+}
+
+bool storeProvisioningCommand(const String &data) {
+  if (!provisioningAllowed || !data.startsWith("PROVISION|")) return false;
+
+  const int ownerEnd = data.indexOf('|', 10);
+  const int emailEnd = ownerEnd < 0 ? -1 : data.indexOf('|', ownerEnd + 1);
+  if (ownerEnd < 0 || emailEnd < 0 || data.indexOf('|', emailEnd + 1) >= 0) {
+    return false;
+  }
+
+  const String nextOwner = data.substring(10, ownerEnd);
+  const String nextEmail = data.substring(ownerEnd + 1, emailEnd);
+  const String nextPassword = data.substring(emailEnd + 1);
+  String expectedEmail = "device-" + pairingDeviceId;
+  expectedEmail.toLowerCase();
+  expectedEmail += "@devices.smart-inventory.invalid";
+  if (!isSafeCredentialValue(nextOwner, 1, 128) ||
+      !isSafeCredentialValue(nextEmail, 10, 254) ||
+      nextEmail != expectedEmail ||
+      (!userId.isEmpty() && nextOwner != userId) ||
+      !isSafeCredentialValue(nextPassword, 32, 128)) {
+    return false;
+  }
+
+  preferences.putString("user_id", nextOwner);
+  preferences.putString("device_email", nextEmail);
+  preferences.putString("device_pass", nextPassword);
+  userId = nextOwner;
+  deviceEmail = nextEmail;
+  devicePassword = nextPassword;
+  rotatePairingPin();
+  provisioningAllowed = false;
+  restartRequested = true;
+  return true;
+}
+
+class SecureWriteCallbacks : public BLECharacteristicCallbacks {
+  void onWrite(BLECharacteristic *characteristic) override {
+#if ESP_ARDUINO_VERSION_MAJOR >= 3
+    String data = characteristic->getValue();
+#else
+    const std::string rawValue = characteristic->getValue();
     String data = "";
-
-    for (char c : value) data += c;
+    data.reserve(rawValue.length());
+    for (const char c : rawValue) data += c;
+#endif
+    if (data.length() == 0 || data.length() > 500) return;
     data.trim();
 
-    // Assembly used as a synchronization nop
     asm volatile("nop; nop;");
 
-    if (data.startsWith("UID:")) {
-      preferences.putString("user_id", data.substring(4));
+    if (data.startsWith("PROVISION|")) {
+      storeProvisioningCommand(data);
+      return;
     }
-    else if (data == "CAL:ZERO") {
+    if (userId.isEmpty()) return;
+
+    if (data == "CAL:ZERO") {
       scale1.tare();
       scale2.tare();
-    }
-    else if (data.startsWith("CAL:P1:")) {
-      float referenceKg = data.substring(7).toFloat() / 1000.0;
-      if (referenceKg > 0) {
-        float factor = scale1.get_value(10) / referenceKg;
-        if (factor != 0) {
+    } else if (data.startsWith("CAL:P1:")) {
+      const float referenceKg = data.substring(7).toFloat() / 1000.0;
+      if (referenceKg > 0 && referenceKg <= 100) {
+        const float factor = scale1.get_value(10) / referenceKg;
+        if (isfinite(factor) && factor != 0) {
           CAL1 = factor;
           scale1.set_scale(CAL1);
           preferences.putFloat("cal1", CAL1);
         }
       }
-    }
-    else if (data.startsWith("CAL:P2:")) {
-      float referenceKg = data.substring(7).toFloat() / 1000.0;
-      if (referenceKg > 0) {
-        float factor = scale2.get_value(10) / referenceKg;
-        if (factor != 0) {
+    } else if (data.startsWith("CAL:P2:")) {
+      const float referenceKg = data.substring(7).toFloat() / 1000.0;
+      if (referenceKg > 0 && referenceKg <= 100) {
+        const float factor = scale2.get_value(10) / referenceKg;
+        if (isfinite(factor) && factor != 0) {
           CAL2 = factor;
           scale2.set_scale(CAL2);
           preferences.putFloat("cal2", CAL2);
@@ -120,30 +190,45 @@ class MyCallbacks : public BLECharacteristicCallbacks {
 
 void setupBLE() {
   BLEDevice::init("Inventory Platform ESP32");
+#if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 3, 0)
+  BLESecurity::setEncryptionLevel(ESP_BLE_SEC_ENCRYPT_MITM);
+#else
+  BLEDevice::setEncryptionLevel(ESP_BLE_SEC_ENCRYPT_MITM);
+#endif
+
+  BLESecurity *security = new BLESecurity();
+  security->setAuthenticationMode(ESP_LE_AUTH_REQ_SC_MITM_BOND);
+  security->setCapability(ESP_IO_CAP_OUT);
+#if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 3, 0)
+  security->setPassKey(true, pairingPin);
+#else
+  security->setStaticPIN(pairingPin);
+#endif
+
   BLEServer *server = BLEDevice::createServer();
   BLEService *service = server->createService(BLE_SERVICE_UUID);
 
-  BLECharacteristic *ch = service->createCharacteristic(
+  BLECharacteristic *writeCharacteristic = service->createCharacteristic(
     BLE_CHARACTERISTIC_UUID_RX,
     BLECharacteristic::PROPERTY_WRITE
   );
+  writeCharacteristic->setAccessPermissions(ESP_GATT_PERM_WRITE_ENC_MITM);
+  writeCharacteristic->setCallbacks(new SecureWriteCallbacks());
 
-  ch->setCallbacks(new MyCallbacks());
+  BLECharacteristic *identityCharacteristic = service->createCharacteristic(
+    BLE_CHARACTERISTIC_UUID_ID,
+    BLECharacteristic::PROPERTY_READ
+  );
+  identityCharacteristic->setAccessPermissions(ESP_GATT_PERM_READ_ENC_MITM);
+  identityCharacteristic->setValue(("DEVICE:" + pairingDeviceId).c_str());
+
   service->start();
-  BLEDevice::startAdvertising();
+  BLEAdvertising *advertising = BLEDevice::getAdvertising();
+  advertising->addServiceUUID(BLE_SERVICE_UUID);
+  advertising->setScanResponse(true);
+  advertising->start();
 }
 
-/************************************************************
- * PART 3 – LUCAS
- * This part was implemented by Lucas.
- * Responsibilities:
- * - Sensor reading
- * - Firebase data transmission
- * - Assembly arithmetic operations
- ************************************************************/
-
-// ===== ASSEMBLY (Lucas) =====
-// Simple arithmetic using registers
 int assemblyAdd(int a, int b) {
   int result;
   asm volatile (
@@ -154,23 +239,28 @@ int assemblyAdd(int a, int b) {
   return result;
 }
 
-String getTimestamp() {
+bool getTimestamp(String &timestamp) {
   struct tm timeinfo;
-  if (!getLocalTime(&timeinfo)) return "2025-01-01T00:00:00Z";
-  char buf[32];
-  strftime(buf, sizeof(buf), "%Y-%m-%dT%H:%M:%SZ", &timeinfo);
-  return String(buf);
+  if (!getLocalTime(&timeinfo, 5000)) return false;
+  char buffer[32];
+  strftime(buffer, sizeof(buffer), "%Y-%m-%dT%H:%M:%SZ", &timeinfo);
+  timestamp = String(buffer);
+  return true;
 }
 
-void sendData(String id, float weight) {
-  int dummy = assemblyAdd(5, 10); // Lucas' assembly function
-  Serial.println("Assembly dummy result: " + String(dummy));
+void sendData(const String &platformId, float weight) {
+  if (!firebaseConfigured || !Firebase.ready() || !isfinite(weight)) return;
 
-  String json =
-    "{\"fields\":{\"current_weight_kg\":{\"doubleValue\":" + String(weight, 2) +
-    "},\"last_updated\":{\"timestampValue\":\"" + getTimestamp() + "\"}}}";
+  String timestamp;
+  if (!getTimestamp(timestamp)) return;
 
-  String path = "users/" + userId + "/platforms/" + id;
+  const int dummy = assemblyAdd(5, 10);
+  (void)dummy;
+  const String json =
+    "{\"fields\":{\"current_weight_kg\":{\"doubleValue\":" +
+    String(weight, 2) +
+    "},\"last_updated\":{\"timestampValue\":\"" + timestamp + "\"}}}";
+  const String path = "users/" + userId + "/platforms/" + platformId;
 
   Firebase.Firestore.patchDocument(
     &fbdo,
@@ -182,19 +272,25 @@ void sendData(String id, float weight) {
   );
 }
 
-/************************************************************
- * MAIN APPLICATION FLOW
- ************************************************************/
-
 void setup() {
   Serial.begin(115200);
-  // Keep the legacy namespace so existing WiFi and user pairing survives the
-  // product-domain rebrand.
+  pinMode(PAIRING_BUTTON_PIN, INPUT_PULLUP);
   preferences.begin("smart-fridge", false);
 
+  pairingDeviceId = getOrCreatePairingDeviceId();
+  pairingPin = getOrCreatePairingPin();
   userId = preferences.getString("user_id", "");
-  String ssid = preferences.getString("wifi_ssid", "");
-  String pass = preferences.getString("wifi_pass", "");
+  deviceEmail = preferences.getString("device_email", "");
+  devicePassword = preferences.getString("device_pass", "");
+  provisioningAllowed =
+    userId.isEmpty() ||
+    deviceEmail.isEmpty() ||
+    devicePassword.isEmpty() ||
+    digitalRead(PAIRING_BUTTON_PIN) == LOW;
+
+  if (provisioningAllowed) {
+    Serial.printf("BLE pairing code: %06u\n", pairingPin);
+  }
 
   setupBLE();
 
@@ -205,32 +301,37 @@ void setup() {
   scale1.set_scale(CAL1);
   scale2.set_scale(CAL2);
 
-  if (ssid != "") {
-    connectWiFiWithAssembly(ssid, pass);
+  const String ssid = preferences.getString("wifi_ssid", "");
+  const String wifiPassword = preferences.getString("wifi_pass", "");
+  if (!ssid.isEmpty()) connectWiFiWithAssembly(ssid, wifiPassword);
+
+  if (!userId.isEmpty() && !deviceEmail.isEmpty() && !devicePassword.isEmpty()) {
+    configTime(0, 0, "pool.ntp.org", "time.google.com");
+    config.api_key = API_KEY;
+    auth.user.email = deviceEmail.c_str();
+    auth.user.password = devicePassword.c_str();
+    Firebase.begin(&config, &auth);
+    Firebase.reconnectWiFi(true);
+    firebaseConfigured = true;
   }
-
-  configTime(0, 0, "pool.ntp.org");
-  config.api_key = API_KEY;
-  auth.user.email = "esp32@auth.com";
-  auth.user.password = "esp32pass";
-
-  Firebase.begin(&config, &auth);
-  Firebase.reconnectWiFi(true);
 
   lastSendTime = millis() - SEND_INTERVAL_MS;
 }
 
 void loop() {
-  if (millis() - lastSendTime > SEND_INTERVAL_MS) {
-    float w1 = scale1.get_units(10);
-    float w2 = scale2.get_units(10);
+  if (restartRequested) {
+    delay(500);
+    ESP.restart();
+  }
 
-    if (w1 < 0) w1 = 0;
-    if (w2 < 0) w2 = 0;
+  if (firebaseConfigured && millis() - lastSendTime > SEND_INTERVAL_MS) {
+    float weight1 = scale1.get_units(10);
+    float weight2 = scale2.get_units(10);
+    if (!isfinite(weight1) || weight1 < 0) weight1 = 0;
+    if (!isfinite(weight2) || weight2 < 0) weight2 = 0;
 
-    sendData("platform1", w1);
-    sendData("platform2", w2);
-
+    sendData("platform1", weight1);
+    sendData("platform2", weight2);
     lastSendTime = millis();
   }
 }

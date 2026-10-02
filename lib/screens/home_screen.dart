@@ -5,6 +5,7 @@ import '../models/product_model.dart';
 import '../services/inventory_service.dart';
 import '../services/shopping_list_service.dart';
 import '../utils/inventory_categories.dart';
+import '../utils/input_validation.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -50,6 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     TextField(
                       controller: nameController,
+                      maxLength: InputValidation.maxNameLength,
                       decoration: InputDecoration(
                         labelText: l10n.productName,
                         prefixIcon: const Icon(Icons.inventory_2_outlined),
@@ -134,6 +136,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
 
                     if (name.isEmpty ||
+                        name.length > InputValidation.maxNameLength ||
+                        (unitWeightGrams != null &&
+                            unitWeightGrams / 1000 >
+                                InputValidation.maxWeightKg) ||
+                        (threshold != null &&
+                            threshold > InputValidation.maxThreshold) ||
                         (unitWeightController.text.trim().isNotEmpty &&
                             unitWeightGrams == null) ||
                         (thresholdController.text.trim().isNotEmpty &&
@@ -189,7 +197,7 @@ class _HomeScreenState extends State<HomeScreen> {
   double? _parsePositiveDouble(String value) {
     if (value.trim().isEmpty) return null;
     final parsed = double.tryParse(value.trim().replaceAll(',', '.'));
-    return parsed != null && parsed > 0 ? parsed : null;
+    return parsed != null && parsed.isFinite && parsed > 0 ? parsed : null;
   }
 
   int? _parseNonNegativeInt(String value) {
@@ -236,7 +244,7 @@ class _HomeScreenState extends State<HomeScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-            return Center(child: Text('${l10n.error}: ${snapshot.error}'));
+            return Center(child: Text(l10n.updateFailed));
           }
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return Center(child: Text(l10n.noProductsFound));

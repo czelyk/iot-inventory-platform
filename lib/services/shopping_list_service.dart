@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/shopping_item_model.dart';
+import '../utils/input_validation.dart';
+import '../utils/inventory_categories.dart';
 
 class ShoppingListService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -49,13 +51,16 @@ class ShoppingListService {
   Future<void> addItem(String name, String category) async {
     final collection = _getItemsCollection();
     if (collection == null) throw StateError('User is not signed in.');
-    final normalizedName = name.trim();
-    if (normalizedName.isEmpty) return;
+    final normalizedName = InputValidation.name(name);
+    final validCategory = InputValidation.category(
+      category,
+      InventoryCategories.values,
+    );
 
     await collection.add({
       'name': normalizedName,
       'isBought': false,
-      'category': category,
+      'category': validCategory,
       'createdAt': FieldValue.serverTimestamp(),
     });
   }
@@ -70,11 +75,18 @@ class ShoppingListService {
     final collection = _getItemsCollection();
     if (collection == null) throw StateError('User is not signed in.');
 
-    await collection.doc('inventory_$productId').set({
-      'name': name.trim(),
+    final validProductId = InputValidation.platformId(productId);
+    final validName = InputValidation.name(name);
+    final validCategory = InputValidation.category(
+      category,
+      InventoryCategories.values,
+    );
+
+    await collection.doc('inventory_$validProductId').set({
+      'name': validName,
       'isBought': false,
-      'category': category,
-      'sourceProductId': productId,
+      'category': validCategory,
+      'sourceProductId': validProductId,
       'createdAt': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
   }
@@ -82,13 +94,15 @@ class ShoppingListService {
   Future<void> toggleItemStatus(String id, bool isBought) async {
     final collection = _getItemsCollection();
     if (collection == null) throw StateError('User is not signed in.');
-    await collection.doc(id).update({'isBought': isBought});
+    await collection
+        .doc(InputValidation.documentId(id))
+        .update({'isBought': isBought});
   }
 
   Future<void> deleteItem(String id) async {
     final collection = _getItemsCollection();
     if (collection == null) throw StateError('User is not signed in.');
-    await collection.doc(id).delete();
+    await collection.doc(InputValidation.documentId(id)).delete();
   }
 
   static String _readString(Object? value, {String fallback = ''}) =>

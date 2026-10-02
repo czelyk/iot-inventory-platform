@@ -17,29 +17,73 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLogin = true; // Toggle between Login and Register
 
   Future<void> _submit() async {
-    setState(() => _isLoading = true);
     final email = _emailController.text.trim();
     final password = _passwordController.text;
-    String? error;
+    final l10n = AppLocalizations.of(context)!;
+    final validEmail = RegExp(
+      r'^[^\s@]+@[^\s@]+\.[^\s@]+$',
+    ).hasMatch(email);
+
+    if (!validEmail) {
+      _showMessage(l10n.authInvalidEmail, isError: true);
+      return;
+    }
+    if (!_isLogin && password.length < 8) {
+      _showMessage(l10n.authWeakPassword, isError: true);
+      return;
+    }
+
+    setState(() => _isLoading = true);
+    String? message;
+    var isError = false;
 
     try {
       if (_isLogin) {
         await _authService.signIn(email, password);
       } else {
         await _authService.signUp(email, password);
+        message = l10n.registrationEmailSent;
+        _passwordController.clear();
+        _isLogin = true;
       }
-    } catch (e) {
-      error = e.toString();
+    } on AuthServiceException catch (error) {
+      message = _messageForFailure(error.code, l10n);
+      isError = true;
+    } catch (_) {
+      message = l10n.authUnknownError;
+      isError = true;
     }
 
     if (!mounted) return;
     setState(() => _isLoading = false);
 
-    if (error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error)),
-      );
-    }
+    if (message != null) _showMessage(message, isError: isError);
+  }
+
+  void _showMessage(String message, {required bool isError}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.red.shade700 : Colors.green.shade700,
+      ),
+    );
+  }
+
+  String _messageForFailure(
+    AuthFailureCode code,
+    AppLocalizations l10n,
+  ) {
+    return switch (code) {
+      AuthFailureCode.invalidCredentials => l10n.authInvalidCredentials,
+      AuthFailureCode.invalidEmail => l10n.authInvalidEmail,
+      AuthFailureCode.weakPassword => l10n.authWeakPassword,
+      AuthFailureCode.registrationUnavailable =>
+        l10n.authRegistrationUnavailable,
+      AuthFailureCode.verificationRequired => l10n.authVerificationRequired,
+      AuthFailureCode.tooManyRequests => l10n.authTooManyRequests,
+      AuthFailureCode.network => l10n.authNetworkError,
+      AuthFailureCode.unknown => l10n.authUnknownError,
+    };
   }
 
   @override
@@ -75,6 +119,10 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 32),
               TextField(
                 controller: _emailController,
+                autofillHints: const [AutofillHints.email],
+                autocorrect: false,
+                enableSuggestions: false,
+                maxLength: 254,
                 decoration: InputDecoration(
                   labelText: l10n.email,
                   border: const OutlineInputBorder(),
@@ -85,6 +133,12 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 16),
               TextField(
                 controller: _passwordController,
+                autofillHints: _isLogin
+                    ? const [AutofillHints.password]
+                    : const [AutofillHints.newPassword],
+                autocorrect: false,
+                enableSuggestions: false,
+                maxLength: 128,
                 decoration: InputDecoration(
                   labelText: l10n.password,
                   border: const OutlineInputBorder(),

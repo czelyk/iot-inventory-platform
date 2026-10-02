@@ -1,0 +1,162 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function verifiedOwner(userId) {
+      return signedIn()
+        && request.auth.uid == userId
+        && request.auth.token.email_verified == true;
+    }
+
+    function supportedCategory(category) {
+      return category in [
+        'Automotive',
+        'Electronics',
+        'Hardware',
+        'Packaged Goods',
+        'Cleaning Supplies',
+        'Office Supplies',
+        'Other'
+      ];
+    }
+
+    function validOptionalNumber(data, field, minimum, maximum) {
+      return !(field in data)
+        || (data[field] is number
+          && data[field] >= minimum
+          && data[field] <= maximum);
+    }
+
+    function validOptionalInt(data, field, minimum, maximum) {
+      return !(field in data)
+        || (data[field] is int
+          && data[field] >= minimum
+          && data[field] <= maximum);
+    }
+
+    function validPlatform(data) {
+      return data.name is string
+        && data.name.size() >= 1
+        && data.name.size() <= 100
+        && data.category is string
+        && supportedCategory(data.category)
+        && validOptionalNumber(data, 'unit_weight_kg', 0.000001, 10000)
+        && validOptionalInt(data, 'minimum_stock_threshold', 0, 1000000);
+    }
+
+    function validShoppingItem(data) {
+      return data.keys().hasOnly([
+          'name', 'category', 'isBought', 'createdAt', 'sourceProductId'
+        ])
+        && data.keys().hasAll(['name', 'category', 'isBought', 'createdAt'])
+        && data.name is string
+        && data.name.size() >= 1
+        && data.name.size() <= 100
+        && data.category is string
+        && supportedCategory(data.category)
+        && data.isBought is bool
+        && data.createdAt is timestamp
+        && (!('sourceProductId' in data)
+          || (data.sourceProductId is string
+            && data.sourceProductId.matches('^platform[0-9]{1,2}$')));
+    }
+
+    function validPairedDevice(device, platformId) {
+      return device.deviceUid == request.auth.uid
+        && device.keyVersion == request.auth.token.device_key_version
+        && device.platformIds is list
+        && platformId in device.platformIds
+        && device.status == 'active';
+    }
+
+    function pairedDevice(userId, platformId) {
+      return signedIn()
+        && request.auth.token.device_owner_uid == userId
+        && request.auth.token.device_id is string
+        && request.auth.token.device_id.matches('^[A-F0-9]{32}$')
+        && request.auth.token.device_key_version is string
+        && request.auth.token.device_key_version.matches('^[a-f0-9]{32}$')
+        && exists(/databases/$(database)/documents/users/$(userId)/devices/$(request.auth.token.device_id))
+        && validPairedDevice(
+          get(/databases/$(database)/documents/users/$(userId)/devices/$(request.auth.token.device_id)).data,
+          platformId
+        );
+    }
+
+    function validSensorUpdate() {
+      return request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['current_weight_kg', 'last_updated'])
+        && request.resource.data.current_weight_kg is number
+        && request.resource.data.current_weight_kg >= 0
+        && request.resource.data.current_weight_kg <= 10000
+        && request.resource.data.last_updated is timestamp
+        && request.resource.data.last_updated >= request.time - duration.value(10, 'm')
+        && request.resource.data.last_updated <= request.time + duration.value(1, 'm')
+        && (!('last_updated' in resource.data)
+          || request.resource.data.last_updated >= resource.data.last_updated);
+    }
+
+    match /users/{userId} {
+      allow read: if verifiedOwner(userId);
+      allow create, delete: if false;
+      allow update: if verifiedOwner(userId)
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['languageCode'])
+        && request.resource.data.languageCode in ['de', 'en', 'tr'];
+
+      match /platforms/{platformId} {
+        allow read: if verifiedOwner(userId);
+        allow create, delete: if false;
+        allow update: if (
+            verifiedOwner(userId)
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+              'name',
+              'category',
+              'unit_weight_kg',
+              'minimum_stock_threshold',
+              'configuration_updated_at'
+            ])
+            && request.resource.data.configuration_updated_at == request.time
+            && validPlatform(request.resource.data)
+          ) || (
+            pairedDevice(userId, platformId)
+            && validSensorUpdate()
+          );
+      }
+
+      match /shopping_list/{itemId} {
+        allow read: if verifiedOwner(userId);
+        allow create: if verifiedOwner(userId)
+          && validShoppingItem(request.resource.data)
+          && request.resource.data.createdAt == request.time;
+        allow update: if verifiedOwner(userId)
+          && validShoppingItem(request.resource.data)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'name', 'category', 'isBought', 'createdAt', 'sourceProductId'
+          ])
+          && (
+            request.resource.data.createdAt == resource.data.createdAt
+            || request.resource.data.createdAt == request.time
+          );
+        allow delete: if verifiedOwner(userId);
+      }
+
+      match /devices/{deviceId} {
+        allow read: if verifiedOwner(userId);
+        allow write: if false;
+      }
+    }
+
+    match /deviceRegistry/{deviceId} {
+      allow read, write: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

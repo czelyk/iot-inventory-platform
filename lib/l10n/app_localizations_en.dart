@@ -71,4 +71,13 @@ class AppLocalizationsEn extends AppLocalizations {
   @override String get addToRestockingList => 'Add to restocking list';
   @override String get addedToRestockingList => 'Added to the restocking list.';
   @override String get updateFailed => 'The update could not be completed. Please try again.';
+  @override String get authInvalidCredentials => 'Email or password is incorrect.';
+  @override String get authInvalidEmail => 'Enter a valid email address.';
+  @override String get authWeakPassword => 'Use a password with at least 8 characters.';
+  @override String get authRegistrationUnavailable => 'Registration could not be completed. Try signing in or resetting your password.';
+  @override String get authVerificationRequired => 'Verify your email before signing in. A new verification email was requested.';
+  @override String get authTooManyRequests => 'Too many attempts. Please wait and try again.';
+  @override String get authNetworkError => 'Check your internet connection and try again.';
+  @override String get authUnknownError => 'Authentication could not be completed. Please try again.';
+  @override String get registrationEmailSent => 'Check your email to verify your account, then sign in.';
 }

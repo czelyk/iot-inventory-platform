@@ -71,4 +71,13 @@ class AppLocalizationsTr extends AppLocalizations {
   @override String get addToRestockingList => 'Tedarik listesine ekle';
   @override String get addedToRestockingList => 'Tedarik listesine eklendi.';
   @override String get updateFailed => 'Güncelleme tamamlanamadı. Lütfen tekrar deneyin.';
+  @override String get authInvalidCredentials => 'E-posta veya şifre hatalı.';
+  @override String get authInvalidEmail => 'Geçerli bir e-posta adresi girin.';
+  @override String get authWeakPassword => 'En az 8 karakterli bir şifre kullanın.';
+  @override String get authRegistrationUnavailable => 'Kayıt tamamlanamadı. Oturum açmayı veya şifrenizi sıfırlamayı deneyin.';
+  @override String get authVerificationRequired => 'Oturum açmadan önce e-postanızı doğrulayın. Yeni bir doğrulama e-postası istendi.';
+  @override String get authTooManyRequests => 'Çok fazla deneme yapıldı. Bekleyip tekrar deneyin.';
+  @override String get authNetworkError => 'İnternet bağlantınızı kontrol edip tekrar deneyin.';
+  @override String get authUnknownError => 'Kimlik doğrulama tamamlanamadı. Lütfen tekrar deneyin.';
+  @override String get registrationEmailSent => 'Hesabınızı doğrulamak için e-postanızı kontrol edin, ardından oturum açın.';
 }

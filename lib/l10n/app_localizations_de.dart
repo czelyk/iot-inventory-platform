@@ -71,4 +71,13 @@ class AppLocalizationsDe extends AppLocalizations {
   @override String get addToRestockingList => 'Zur Nachbestellliste hinzufügen';
   @override String get addedToRestockingList => 'Zur Nachbestellliste hinzugefügt.';
   @override String get updateFailed => 'Die Aktualisierung konnte nicht abgeschlossen werden. Bitte versuchen Sie es erneut.';
+  @override String get authInvalidCredentials => 'E-Mail-Adresse oder Passwort ist falsch.';
+  @override String get authInvalidEmail => 'Geben Sie eine gültige E-Mail-Adresse ein.';
+  @override String get authWeakPassword => 'Verwenden Sie ein Passwort mit mindestens 8 Zeichen.';
+  @override String get authRegistrationUnavailable => 'Die Registrierung konnte nicht abgeschlossen werden. Versuchen Sie, sich anzumelden oder Ihr Passwort zurückzusetzen.';
+  @override String get authVerificationRequired => 'Bestätigen Sie vor der Anmeldung Ihre E-Mail-Adresse. Eine neue Bestätigungs-E-Mail wurde angefordert.';
+  @override String get authTooManyRequests => 'Zu viele Versuche. Bitte warten Sie und versuchen Sie es erneut.';
+  @override String get authNetworkError => 'Prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.';
+  @override String get authUnknownError => 'Die Authentifizierung konnte nicht abgeschlossen werden. Bitte versuchen Sie es erneut.';
+  @override String get registrationEmailSent => 'Bestätigen Sie Ihr Konto über die E-Mail und melden Sie sich danach an.';
 }

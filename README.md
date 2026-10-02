@@ -60,7 +60,8 @@ and `platform2`. It reads ten samples per channel and publishes every 30 seconds
 - Flutter mobile and desktop application
 - Firebase Authentication
 - Cloud Firestore
-- Firebase Cloud Function for initial user data
+- Firebase Cloud Functions for user initialization and per-device provisioning
+- Deny-by-default Firestore Security Rules
 
 No application ID or deployed Firebase project identity was renamed during the
 domain conversion, avoiding unnecessary configuration and deployment breakage.
@@ -139,10 +140,12 @@ domain.
 
 1. Use the existing Firebase project configuration or connect your own project.
 2. Enable Firebase Authentication and Cloud Firestore.
-3. Keep credentials in the existing local/generated configuration locations.
-   Do not place secret values in documentation, logs, or commits.
-4. To initialize new-user product slots, install dependencies in `functions/`
-   and deploy `createUserProfile` through your normal Firebase workflow.
+3. Enable email verification for application users. The app refuses data access
+   until the address has been verified.
+4. Install `functions/` dependencies, then deploy Functions and the checked-in
+   `firestore.rules`. See [`SECURITY.md`](SECURITY.md) for the safe rollout order.
+5. Firebase client API keys are public project identifiers, but must still be
+   restricted to the required APIs and application identifiers in Google Cloud.
 
 ### Flutter application
 
@@ -152,8 +155,9 @@ flutter gen-l10n
 flutter run
 ```
 
-Sign in, open **Account → Inventory Device Setup** to associate the ESP32 user,
-then open **Calibration** to tare and calibrate the two weighing platforms.
+Verify the account email, sign in, and open **Account → Inventory Device
+Setup** to provision a unique, revocable ESP32 identity. Then open
+**Calibration** to tare and calibrate the two weighing platforms.
 Configure each product's name, category, unit weight, and optional minimum-stock
 threshold from the inventory screen.
 
@@ -163,10 +167,14 @@ threshold from the inventory screen.
    compatible ESP32 build environment.
 2. Install the board support and required WiFi, Firebase ESP Client, HX711, BLE,
    and Preferences libraries.
-3. Configure the existing network/Firebase authentication mechanism locally;
-   never publish its credential values.
+3. Configure only the Wi-Fi network locally. Firebase credentials are generated
+   per device during BLE setup and are never compiled into the firmware.
 4. Select the correct ESP32 target and port, compile, and upload.
-5. Pair the device in the app and run tare/reference calibration.
+5. Pair a new device in the app. To re-provision an existing device, hold its
+   BOOT/pairing button while powering it on, then complete setup in the app.
+   Enter the six-digit BLE pairing code printed on the device's serial console
+   when the operating system requests it.
+6. Run tare/reference calibration.
 
 ## Future Improvements
 

@@ -67,5 +67,14 @@
   "lastSensorUpdate": "Letzte Sensoraktualisierung",
   "addToRestockingList": "Zur Nachbestellliste hinzufügen",
   "addedToRestockingList": "Zur Nachbestellliste hinzugefügt.",
-  "updateFailed": "Die Aktualisierung konnte nicht abgeschlossen werden. Bitte versuchen Sie es erneut."
+  "updateFailed": "Die Aktualisierung konnte nicht abgeschlossen werden. Bitte versuchen Sie es erneut.",
+  "authInvalidCredentials": "E-Mail-Adresse oder Passwort ist falsch.",
+  "authInvalidEmail": "Geben Sie eine gültige E-Mail-Adresse ein.",
+  "authWeakPassword": "Verwenden Sie ein Passwort mit mindestens 8 Zeichen.",
+  "authRegistrationUnavailable": "Die Registrierung konnte nicht abgeschlossen werden. Versuchen Sie, sich anzumelden oder Ihr Passwort zurückzusetzen.",
+  "authVerificationRequired": "Bestätigen Sie vor der Anmeldung Ihre E-Mail-Adresse. Eine neue Bestätigungs-E-Mail wurde angefordert.",
+  "authTooManyRequests": "Zu viele Versuche. Bitte warten Sie und versuchen Sie es erneut.",
+  "authNetworkError": "Prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
+  "authUnknownError": "Die Authentifizierung konnte nicht abgeschlossen werden. Bitte versuchen Sie es erneut.",
+  "registrationEmailSent": "Bestätigen Sie Ihr Konto über die E-Mail und melden Sie sich danach an."
 }

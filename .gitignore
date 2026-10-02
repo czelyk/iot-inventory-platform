@@ -33,6 +33,15 @@ migrate_working_dir/
 /build/
 /coverage/
 
+# Local credentials and generated security tooling state
+.env
+.env.*
+!.env.example
+**/secrets.h
+**/service-account*.json
+functions/.runtimeconfig.json
+functions/.npm-cache/
+
 # Symbolication related
 app.*.symbols
 

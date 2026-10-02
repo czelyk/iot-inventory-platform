@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../models/product_model.dart';
+import '../utils/input_validation.dart';
+import '../utils/inventory_categories.dart';
 
 class InventoryService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -38,14 +40,25 @@ class InventoryService {
     int? minimumStockThreshold,
   }) async {
     final collection = _productsCollection();
-    if (collection == null) return;
+    if (collection == null) throw StateError('User is not signed in.');
 
-    await collection.doc(productId).set({
-      'name': name,
-      'category': category,
-      'unit_weight_kg': unitWeightKg ?? FieldValue.delete(),
+    final validProductId = InputValidation.platformId(productId);
+    final validName = InputValidation.name(name);
+    final validCategory = InputValidation.category(
+      category,
+      InventoryCategories.values,
+    );
+    final validUnitWeight = InputValidation.optionalWeight(unitWeightKg);
+    final validThreshold = InputValidation.optionalThreshold(
+      minimumStockThreshold,
+    );
+
+    await collection.doc(validProductId).set({
+      'name': validName,
+      'category': validCategory,
+      'unit_weight_kg': validUnitWeight ?? FieldValue.delete(),
       'minimum_stock_threshold':
-          minimumStockThreshold ?? FieldValue.delete(),
+          validThreshold ?? FieldValue.delete(),
       'configuration_updated_at': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
   }
