@@ -16,12 +16,9 @@ class NotificationsScreen extends StatefulWidget {
 }
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
-  static const String _serviceUuid =
-      '6E400001-B5A3-F393-E0A9-E50E24DCCA9E';
-  static const String _writeUuid =
-      '6E400002-B5A3-F393-E0A9-E50E24DCCA9E';
-  static const String _identityUuid =
-      '6E400003-B5A3-F393-E0A9-E50E24DCCA9E';
+  static const String _serviceUuid = '6E400001-B5A3-F393-E0A9-E50E24DCCA9E';
+  static const String _writeUuid = '6E400002-B5A3-F393-E0A9-E50E24DCCA9E';
+  static const String _identityUuid = '6E400003-B5A3-F393-E0A9-E50E24DCCA9E';
   static const Set<String> _supportedDeviceNames = {
     'Inventory Platform ESP32',
     // Backward compatibility for devices that have not received new firmware.
@@ -33,6 +30,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   BluetoothDevice? _targetDevice;
   BluetoothCharacteristic? _writeCharacteristic;
   String _statusMessage = "";
+  bool _hasStatusError = false;
 
   bool get _isAndroid =>
       !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
@@ -45,7 +43,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         Permission.location,
       ].request();
 
-      if (statuses[Permission.bluetoothScan]!.isDenied || 
+      if (statuses[Permission.bluetoothScan]!.isDenied ||
           statuses[Permission.bluetoothConnect]!.isDenied) {
         return false;
       }
@@ -54,22 +52,25 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   Future<void> _findAndConnect() async {
+    final l10n = AppLocalizations.of(context)!;
     setState(() {
       _isConnecting = true;
-      _statusMessage = "İzinler kontrol ediliyor...";
+      _hasStatusError = false;
+      _statusMessage = l10n.checkingPermissions;
     });
 
     if (!await _requestPermissions()) {
       if (!mounted) return;
       setState(() {
         _isConnecting = false;
-        _statusMessage = "Bluetooth izinleri verilmedi.";
+        _hasStatusError = true;
+        _statusMessage = l10n.bluetoothPermissionDenied;
       });
       return;
     }
 
     if (!mounted) return;
-    setState(() => _statusMessage = "Cihaz aranıyor...");
+    setState(() => _statusMessage = l10n.searchingForDevice);
 
     try {
       // 1. Önce halihazırda bağlı cihazlara bak (Bağlı kalmış olabilir)
@@ -85,11 +86,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       // 2. Bağlı değilse tarama yap
       if (_targetDevice == null) {
         await FlutterBluePlus.startScan(timeout: const Duration(seconds: 8));
-        
+
         Completer<BluetoothDevice?> completer = Completer();
         var subscription = FlutterBluePlus.scanResults.listen((results) {
           for (ScanResult r in results) {
-            final name = r.device.platformName.isNotEmpty ? r.device.platformName : r.advertisementData.advName;
+            final name = r.device.platformName.isNotEmpty
+                ? r.device.platformName
+                : r.advertisementData.advName;
             if (_supportedDeviceNames.contains(name)) {
               if (!completer.isCompleted) {
                 completer.complete(r.device);
@@ -115,20 +118,23 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         if (!mounted) return;
         setState(() {
           _isConnecting = false;
-          _statusMessage = "Cihaz bulunamadı. Lütfen ESP32'nin açık olduğundan emin olun.";
+          _hasStatusError = true;
+          _statusMessage = l10n.inventoryDeviceNotFound;
         });
         return;
       }
 
       // 3. Bağlan (Zaten bağlıysa hata vermez)
       if (!mounted) return;
-      setState(() => _statusMessage = "Cihaza bağlanılıyor...");
-      await _targetDevice!.connect(autoConnect: false).timeout(const Duration(seconds: 10));
-      
+      setState(() => _statusMessage = l10n.connectingToInventoryDevice);
+      await _targetDevice!
+          .connect(autoConnect: false)
+          .timeout(const Duration(seconds: 10));
+
       if (!mounted) return;
-      setState(() => _statusMessage = "Servisler keşfediliyor...");
+      setState(() => _statusMessage = l10n.discoveringBluetoothServices);
       List<BluetoothService> services = await _targetDevice!.discoverServices();
-      
+
       _writeCharacteristic = null;
       final matchingServices = services.where(
         (service) => service.uuid.toString().toUpperCase() == _serviceUuid,
@@ -171,9 +177,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       if (mounted) {
         setState(() {
           _isConnecting = false;
+          _hasStatusError = _writeCharacteristic == null;
           _statusMessage = _writeCharacteristic != null
-              ? "Cihaz Hazır."
-              : "Hata: Yazılabilir özellik bulunamadı.";
+              ? l10n.deviceReady
+              : l10n.writableCharacteristicNotFound;
         });
       }
     } catch (_) {
@@ -182,13 +189,15 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       if (mounted) {
         setState(() {
           _isConnecting = false;
-          _statusMessage = "Güvenli Bluetooth bağlantısı kurulamadı.";
+          _hasStatusError = true;
+          _statusMessage = l10n.secureBluetoothConnectionFailed;
         });
       }
     }
   }
 
   Future<bool> _sendCommand(String command) async {
+    final l10n = AppLocalizations.of(context)!;
     if (_writeCharacteristic == null) {
       await _findAndConnect();
     }
@@ -199,7 +208,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text("Komut gönderildi: $command"),
+              content: Text(l10n.commandSent),
               backgroundColor: Colors.green,
             ),
           );
@@ -207,7 +216,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         return true;
       } catch (_) {
         if (mounted) {
-          setState(() => _statusMessage = "Komut güvenli biçimde gönderilemedi.");
+          setState(() {
+            _hasStatusError = true;
+            _statusMessage = l10n.commandCouldNotBeSent;
+          });
         }
         _writeCharacteristic = null; // Bağlantı kopmuş olabilir, sıfırla
       }
@@ -239,15 +251,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             if (_isConnecting) const LinearProgressIndicator(),
             const SizedBox(height: 10),
             Text(
-              _statusMessage.isEmpty ? "Kalibrasyona başlamak için butona basın." : _statusMessage,
+              _statusMessage.isEmpty
+                  ? l10n.startCalibrationPrompt
+                  : _statusMessage,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: _statusMessage.contains("Hata") ? Colors.red : Colors.teal
+                color: _hasStatusError ? Colors.red : Colors.teal,
               ),
             ),
             const SizedBox(height: 30),
-            
             _buildStepCard(
               step: 1,
               title: l10n.emptyPlatforms,
@@ -261,9 +274,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               isActive: _currentStep >= 0,
               isCompleted: _currentStep > 0,
             ),
-            
             const SizedBox(height: 16),
-            
             _buildStepCard(
               step: 2,
               title: l10n.place800gP1,
@@ -277,9 +288,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               isActive: _currentStep >= 1,
               isCompleted: _currentStep > 1,
             ),
-            
             const SizedBox(height: 16),
-            
             _buildStepCard(
               step: 3,
               title: l10n.place800gP2,
@@ -293,7 +302,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               isActive: _currentStep >= 2,
               isCompleted: _currentStep > 2,
             ),
-
             if (_currentStep == 3) ...[
               const SizedBox(height: 30),
               Container(
@@ -307,7 +315,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   children: [
                     const Icon(Icons.check_circle, color: Colors.green),
                     const SizedBox(width: 12),
-                    Expanded(child: Text(l10n.calibrationComplete, style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold))),
+                    Expanded(
+                        child: Text(l10n.calibrationComplete,
+                            style: const TextStyle(
+                                color: Colors.green,
+                                fontWeight: FontWeight.bold))),
                   ],
                 ),
               ),
@@ -338,7 +350,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         elevation: isActive ? 4 : 1,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(15),
-          side: BorderSide(color: isCompleted ? Colors.green : (isActive ? Colors.teal : Colors.grey.shade300), width: 2),
+          side: BorderSide(
+              color: isCompleted
+                  ? Colors.green
+                  : (isActive ? Colors.teal : Colors.grey.shade300),
+              width: 2),
         ),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -347,17 +363,22 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               Row(
                 children: [
                   CircleAvatar(
-                    backgroundColor: isCompleted ? Colors.green : (isActive ? Colors.teal : Colors.grey),
-                    child: Text(step.toString(), style: const TextStyle(color: Colors.white)),
+                    backgroundColor: isCompleted
+                        ? Colors.green
+                        : (isActive ? Colors.teal : Colors.grey),
+                    child: Text(step.toString(),
+                        style: const TextStyle(color: Colors.white)),
                   ),
                   const SizedBox(width: 15),
                   Expanded(
                     child: Text(
                       title,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.w500),
                     ),
                   ),
-                  if (isCompleted) const Icon(Icons.check_circle, color: Colors.green),
+                  if (isCompleted)
+                    const Icon(Icons.check_circle, color: Colors.green),
                 ],
               ),
               const SizedBox(height: 15),

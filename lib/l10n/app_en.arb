@@ -76,5 +76,60 @@
   "authTooManyRequests": "Too many attempts. Please wait and try again.",
   "authNetworkError": "Check your internet connection and try again.",
   "authUnknownError": "Authentication could not be completed. Please try again.",
-  "registrationEmailSent": "Check your email to verify your account, then sign in."
+  "registrationEmailSent": "Check your email to verify your account, then sign in.",
+  "noUser": "No user",
+  "inventoryDeviceSetup": "Inventory Device Setup",
+  "linkWeighingPlatform": "Link ESP32 weighing platform",
+  "deviceSetup": "Device Setup",
+  "readyToScan": "Ready to scan",
+  "bluetoothOff": "Bluetooth is off",
+  "noDevicesFound": "No devices found. Try again.",
+  "selectDevice": "Select your device",
+  "missingBluetoothPermissions": "Bluetooth permissions are required.",
+  "couldNotTurnOnBluetooth": "Bluetooth could not be turned on.",
+  "turnOnBluetoothManually": "Turn on Bluetooth to continue.",
+  "scanning": "Scanning...",
+  "scanCouldNotStart": "Bluetooth scan could not be started.",
+  "loginFirst": "Sign in first.",
+  "connectingToDevice": "Connecting to {deviceName}...",
+  "@connectingToDevice": {
+    "placeholders": {
+      "deviceName": {"type": "String"}
+    }
+  },
+  "discoveringServices": "Discovering services...",
+  "creatingSecureDeviceIdentity": "Creating secure device identity...",
+  "sendingEncryptedCredentials": "Sending encrypted credentials...",
+  "setupSuccess": "Success",
+  "setupCompleted": "Device setup completed successfully.",
+  "ok": "OK",
+  "secureSetupFailed": "Secure setup failed. Confirm the device is in pairing mode.",
+  "devicesFound": "{count} devices found",
+  "@devicesFound": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "unknownDevice": "Unknown device",
+  "signalStrength": "Signal: {rssi} dBm",
+  "@signalStrength": {
+    "placeholders": {
+      "rssi": {"type": "int"}
+    }
+  },
+  "connect": "Connect",
+  "stopScanning": "Stop scanning",
+  "scanForDevices": "Scan for devices",
+  "checkingPermissions": "Checking permissions...",
+  "bluetoothPermissionDenied": "Bluetooth permission was not granted.",
+  "searchingForDevice": "Searching for device...",
+  "inventoryDeviceNotFound": "Device not found. Make sure the ESP32 is turned on.",
+  "connectingToInventoryDevice": "Connecting to device...",
+  "discoveringBluetoothServices": "Discovering Bluetooth services...",
+  "deviceReady": "Device ready.",
+  "writableCharacteristicNotFound": "A writable device characteristic was not found.",
+  "secureBluetoothConnectionFailed": "A secure Bluetooth connection could not be established.",
+  "commandSent": "Command sent.",
+  "commandCouldNotBeSent": "The command could not be sent securely.",
+  "startCalibrationPrompt": "Press the button to start calibration."
 }

@@ -76,5 +76,60 @@
   "authTooManyRequests": "Zu viele Versuche. Bitte warten Sie und versuchen Sie es erneut.",
   "authNetworkError": "Prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
   "authUnknownError": "Die Authentifizierung konnte nicht abgeschlossen werden. Bitte versuchen Sie es erneut.",
-  "registrationEmailSent": "Bestätigen Sie Ihr Konto über die E-Mail und melden Sie sich danach an."
+  "registrationEmailSent": "Bestätigen Sie Ihr Konto über die E-Mail und melden Sie sich danach an.",
+  "noUser": "Kein Benutzer",
+  "inventoryDeviceSetup": "Einrichtung des Inventargeräts",
+  "linkWeighingPlatform": "ESP32-Wägeplattform verbinden",
+  "deviceSetup": "Geräteeinrichtung",
+  "readyToScan": "Bereit zum Scannen",
+  "bluetoothOff": "Bluetooth ist ausgeschaltet",
+  "noDevicesFound": "Keine Geräte gefunden. Versuchen Sie es erneut.",
+  "selectDevice": "Wählen Sie Ihr Gerät",
+  "missingBluetoothPermissions": "Bluetooth-Berechtigungen sind erforderlich.",
+  "couldNotTurnOnBluetooth": "Bluetooth konnte nicht eingeschaltet werden.",
+  "turnOnBluetoothManually": "Schalten Sie Bluetooth ein, um fortzufahren.",
+  "scanning": "Suche läuft...",
+  "scanCouldNotStart": "Die Bluetooth-Suche konnte nicht gestartet werden.",
+  "loginFirst": "Melden Sie sich zuerst an.",
+  "connectingToDevice": "Verbindung mit {deviceName} wird hergestellt...",
+  "@connectingToDevice": {
+    "placeholders": {
+      "deviceName": {"type": "String"}
+    }
+  },
+  "discoveringServices": "Dienste werden gesucht...",
+  "creatingSecureDeviceIdentity": "Sichere Geräteidentität wird erstellt...",
+  "sendingEncryptedCredentials": "Verschlüsselte Zugangsdaten werden gesendet...",
+  "setupSuccess": "Erfolgreich",
+  "setupCompleted": "Die Geräteeinrichtung wurde erfolgreich abgeschlossen.",
+  "ok": "OK",
+  "secureSetupFailed": "Die sichere Einrichtung ist fehlgeschlagen. Prüfen Sie den Kopplungsmodus des Geräts.",
+  "devicesFound": "{count} Geräte gefunden",
+  "@devicesFound": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "unknownDevice": "Unbekanntes Gerät",
+  "signalStrength": "Signal: {rssi} dBm",
+  "@signalStrength": {
+    "placeholders": {
+      "rssi": {"type": "int"}
+    }
+  },
+  "connect": "Verbinden",
+  "stopScanning": "Suche stoppen",
+  "scanForDevices": "Nach Geräten suchen",
+  "checkingPermissions": "Berechtigungen werden geprüft...",
+  "bluetoothPermissionDenied": "Die Bluetooth-Berechtigung wurde nicht erteilt.",
+  "searchingForDevice": "Gerät wird gesucht...",
+  "inventoryDeviceNotFound": "Gerät nicht gefunden. Stellen Sie sicher, dass der ESP32 eingeschaltet ist.",
+  "connectingToInventoryDevice": "Verbindung zum Gerät wird hergestellt...",
+  "discoveringBluetoothServices": "Bluetooth-Dienste werden gesucht...",
+  "deviceReady": "Gerät bereit.",
+  "writableCharacteristicNotFound": "Keine beschreibbare Geräteeigenschaft gefunden.",
+  "secureBluetoothConnectionFailed": "Eine sichere Bluetooth-Verbindung konnte nicht hergestellt werden.",
+  "commandSent": "Befehl gesendet.",
+  "commandCouldNotBeSent": "Der Befehl konnte nicht sicher gesendet werden.",
+  "startCalibrationPrompt": "Drücken Sie die Taste, um die Kalibrierung zu starten."
 }

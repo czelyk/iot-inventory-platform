@@ -4,7 +4,7 @@ import 'package:smart_kuhlschrank/providers/app_settings_provider.dart';
 import 'package:smart_kuhlschrank/l10n/app_localizations.dart';
 
 class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({Key? key}) : super(key: key);
+  const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
