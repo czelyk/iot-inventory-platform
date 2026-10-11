@@ -7,6 +7,7 @@ import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import '../l10n/app_localizations.dart';
 import '../services/device_provisioning_service.dart';
 
 class BluetoothSetupScreen extends StatefulWidget {
@@ -17,12 +18,9 @@ class BluetoothSetupScreen extends StatefulWidget {
 }
 
 class _BluetoothSetupScreenState extends State<BluetoothSetupScreen> {
-  static const String _serviceUuid =
-      '6E400001-B5A3-F393-E0A9-E50E24DCCA9E';
-  static const String _writeUuid =
-      '6E400002-B5A3-F393-E0A9-E50E24DCCA9E';
-  static const String _identityUuid =
-      '6E400003-B5A3-F393-E0A9-E50E24DCCA9E';
+  static const String _serviceUuid = '6E400001-B5A3-F393-E0A9-E50E24DCCA9E';
+  static const String _writeUuid = '6E400002-B5A3-F393-E0A9-E50E24DCCA9E';
+  static const String _identityUuid = '6E400003-B5A3-F393-E0A9-E50E24DCCA9E';
   static const Set<String> _supportedDeviceNames = {
     'Inventory Platform ESP32',
     // Backward compatibility for devices that have not received new firmware.
@@ -35,7 +33,8 @@ class _BluetoothSetupScreenState extends State<BluetoothSetupScreen> {
   List<ScanResult> _scanResults = [];
   bool _isScanning = false;
   bool _isConnecting = false;
-  String _statusMessage = 'Ready to scan';
+  _SetupStatus _status = _SetupStatus.readyToScan;
+  String _connectingDeviceName = '';
   StreamSubscription<BluetoothAdapterState>? _adapterStateSubscription;
   StreamSubscription<List<ScanResult>>? _scanResultsSubscription;
   StreamSubscription<bool>? _isScanningSubscription;
@@ -48,7 +47,7 @@ class _BluetoothSetupScreenState extends State<BluetoothSetupScreen> {
     super.initState();
     _adapterStateSubscription = FlutterBluePlus.adapterState.listen((state) {
       if (state == BluetoothAdapterState.off) {
-        if (mounted) setState(() => _statusMessage = "Bluetooth is OFF");
+        if (mounted) setState(() => _status = _SetupStatus.bluetoothOff);
       }
     });
     _scanResultsSubscription = FlutterBluePlus.scanResults.listen((results) {
@@ -59,9 +58,9 @@ class _BluetoothSetupScreenState extends State<BluetoothSetupScreen> {
       setState(() {
         _isScanning = isScanning;
         if (!isScanning) {
-          _statusMessage = _scanResults.isEmpty
-              ? 'No devices found. Try again.'
-              : 'Select your device';
+          _status = _scanResults.isEmpty
+              ? _SetupStatus.noDevicesFound
+              : _SetupStatus.selectDevice;
         }
       });
     });
@@ -71,21 +70,19 @@ class _BluetoothSetupScreenState extends State<BluetoothSetupScreen> {
   Future<bool> _requestPermissions() async {
     if (_isAndroid) {
       // Android 12 ve üzeri için (API 31+)
-      if (await Permission.bluetoothScan.status.isDenied || 
+      if (await Permission.bluetoothScan.status.isDenied ||
           await Permission.bluetoothConnect.status.isDenied) {
-        
         Map<Permission, PermissionStatus> statuses = await [
           Permission.bluetoothScan,
           Permission.bluetoothConnect,
           Permission.location, // Bazı cihazlar için hala gerekli
         ].request();
 
-        if (statuses[Permission.bluetoothScan]!.isDenied || 
+        if (statuses[Permission.bluetoothScan]!.isDenied ||
             statuses[Permission.bluetoothConnect]!.isDenied) {
           return false; // İzin verilmedi
         }
       }
-      
     }
     return true;
   }
@@ -95,7 +92,7 @@ class _BluetoothSetupScreenState extends State<BluetoothSetupScreen> {
     bool hasPermissions = await _requestPermissions();
     if (!mounted) return;
     if (!hasPermissions) {
-      setState(() => _statusMessage = "Missing Permissions or GPS is OFF");
+      setState(() => _status = _SetupStatus.missingPermissions);
       return;
     }
 
@@ -106,11 +103,11 @@ class _BluetoothSetupScreenState extends State<BluetoothSetupScreen> {
           await FlutterBluePlus.turnOn();
         } catch (e) {
           if (!mounted) return;
-          setState(() => _statusMessage = "Could not turn on Bluetooth");
+          setState(() => _status = _SetupStatus.couldNotTurnOnBluetooth);
           return;
         }
       } else {
-        setState(() => _statusMessage = "Please turn on Bluetooth manually");
+        setState(() => _status = _SetupStatus.turnOnBluetoothManually);
         return;
       }
     }
@@ -118,7 +115,7 @@ class _BluetoothSetupScreenState extends State<BluetoothSetupScreen> {
     setState(() {
       _isScanning = true;
       _scanResults.clear();
-      _statusMessage = 'Scanning...';
+      _status = _SetupStatus.scanning;
     });
 
     try {
@@ -127,34 +124,40 @@ class _BluetoothSetupScreenState extends State<BluetoothSetupScreen> {
         timeout: const Duration(seconds: 15),
         androidUsesFineLocation: false,
       );
-
     } catch (_) {
       setState(() {
-        _statusMessage = 'Bluetooth scan could not be started.';
+        _status = _SetupStatus.scanCouldNotStart;
         _isScanning = false;
       });
     }
   }
 
   Future<void> _connectAndSendUid(BluetoothDevice device) async {
+    final l10n = AppLocalizations.of(context)!;
     final user = _auth.currentUser;
     if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please login first")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.loginFirst)),
+      );
       return;
     }
 
     setState(() {
       _isConnecting = true;
-      _statusMessage = 'Connecting to ${device.platformName}...';
+      _connectingDeviceName = device.platformName.isEmpty
+          ? l10n.unknownDevice
+          : device.platformName;
+      _status = _SetupStatus.connecting;
     });
 
     try {
       // Bağlan
-      await device.connect(autoConnect: false); // autoConnect: false daha hızlıdır
+      await device.connect(
+          autoConnect: false); // autoConnect: false daha hızlıdır
       if (_isAndroid) await device.requestMtu(512);
 
       if (!mounted) return;
-      setState(() => _statusMessage = 'Discovering Services...');
+      setState(() => _status = _SetupStatus.discoveringServices);
       final services = await device.discoverServices();
       final expectedService = services.where(
         (service) => service.uuid.toString().toUpperCase() == _serviceUuid,
@@ -181,14 +184,14 @@ class _BluetoothSetupScreenState extends State<BluetoothSetupScreen> {
         await identityMatches.single.read(),
         allowMalformed: false,
       );
-      final identity = RegExp(r'^DEVICE:([A-F0-9]{32})$')
-          .firstMatch(identityValue.trim());
+      final identity =
+          RegExp(r'^DEVICE:([A-F0-9]{32})$').firstMatch(identityValue.trim());
       if (identity == null) {
         throw const DeviceProvisioningException('invalid-device');
       }
 
       if (mounted) {
-        setState(() => _statusMessage = 'Creating secure device identity...');
+        setState(() => _status = _SetupStatus.creatingSecureDeviceIdentity);
       }
       final credentials = await _provisioningService.provision(
         identity.group(1)!,
@@ -199,20 +202,20 @@ class _BluetoothSetupScreenState extends State<BluetoothSetupScreen> {
       }
 
       if (!mounted) return;
-      setState(() => _statusMessage = 'Sending encrypted credentials...');
+      setState(() => _status = _SetupStatus.sendingEncryptedCredentials);
       await writeMatches.single.write(payload, withoutResponse: false);
 
       if (mounted) {
         showDialog(
           context: context,
           builder: (ctx) => AlertDialog(
-            title: const Text('Success!'),
+            title: Text(l10n.setupSuccess),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Icon(Icons.check_circle, color: Colors.green, size: 50),
                 const SizedBox(height: 10),
-                const Text('Device setup completed successfully.'),
+                Text(l10n.setupCompleted),
               ],
             ),
             actions: [
@@ -221,17 +224,15 @@ class _BluetoothSetupScreenState extends State<BluetoothSetupScreen> {
                   Navigator.of(ctx).pop();
                   Navigator.of(context).pop();
                 },
-                child: const Text('OK'),
+                child: Text(l10n.ok),
               ),
             ],
           ),
         );
       }
-
     } catch (_) {
       if (mounted) {
-        setState(() => _statusMessage =
-            'Secure setup failed. Confirm the device is in pairing mode.');
+        setState(() => _status = _SetupStatus.secureSetupFailed);
       }
     } finally {
       try {
@@ -257,8 +258,9 @@ class _BluetoothSetupScreenState extends State<BluetoothSetupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('Device Setup')),
+      appBar: AppBar(title: Text(l10n.deviceSetup)),
       body: Column(
         children: [
           // Durum Paneli
@@ -271,16 +273,20 @@ class _BluetoothSetupScreenState extends State<BluetoothSetupScreen> {
                 if (_isScanning) const LinearProgressIndicator(),
                 const SizedBox(height: 10),
                 Text(
-                  _statusMessage,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  _statusText(l10n),
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.bold),
                   textAlign: TextAlign.center,
                 ),
-                if (_scanResults.isNotEmpty) 
-                  Text("${_scanResults.length} devices found", style: const TextStyle(color: Colors.grey)),
+                if (_scanResults.isNotEmpty)
+                  Text(
+                    l10n.devicesFound(_scanResults.length),
+                    style: const TextStyle(color: Colors.grey),
+                  ),
               ],
             ),
           ),
-          
+
           // Cihaz Listesi
           Expanded(
             child: ListView.builder(
@@ -295,40 +301,36 @@ class _BluetoothSetupScreenState extends State<BluetoothSetupScreen> {
                 final isSupported = _supportedDeviceNames.contains(name);
 
                 return Card(
-                  margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   child: ListTile(
                     leading: const CircleAvatar(
                       backgroundColor: Colors.teal,
                       child: Icon(Icons.bluetooth, color: Colors.white),
                     ),
-                    title: Text(
-                      name.isNotEmpty ? name : "Unknown Device", 
-                      style: TextStyle(
-                        fontWeight: name.isNotEmpty ? FontWeight.bold : FontWeight.normal,
-                        color: isSupported
-                            ? Colors.green
-                            : Colors.black
-                      )
-                    ),
-                    subtitle: Text("$id\nSignal: $rssi dBm"),
+                    title: Text(name.isNotEmpty ? name : l10n.unknownDevice,
+                        style: TextStyle(
+                            fontWeight: name.isNotEmpty
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                            color: isSupported ? Colors.green : Colors.black)),
+                    subtitle: Text("$id\n${l10n.signalStrength(rssi)}"),
                     trailing: ElevatedButton(
                       onPressed: _isConnecting || !isSupported
                           ? null
                           : () => _connectAndSendUid(result.device),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: isSupported
-                            ? Colors.green
-                            : Colors.teal,
-                        foregroundColor: Colors.white
-                      ),
-                      child: const Text("Connect"),
+                          backgroundColor:
+                              isSupported ? Colors.green : Colors.teal,
+                          foregroundColor: Colors.white),
+                      child: Text(l10n.connect),
                     ),
                   ),
                 );
               },
             ),
           ),
-          
+
           // Tarama Butonu
           Padding(
             padding: const EdgeInsets.all(20.0),
@@ -336,14 +338,22 @@ class _BluetoothSetupScreenState extends State<BluetoothSetupScreen> {
               width: double.infinity,
               height: 55,
               child: ElevatedButton.icon(
-                icon: _isScanning 
-                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) 
-                  : const Icon(Icons.search),
-                label: Text(_isScanning ? 'STOP SCANNING' : 'SCAN FOR DEVICES', style: const TextStyle(fontSize: 16)),
+                icon: _isScanning
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                            color: Colors.white, strokeWidth: 2))
+                    : const Icon(Icons.search),
+                label: Text(
+                  _isScanning ? l10n.stopScanning : l10n.scanForDevices,
+                  style: const TextStyle(fontSize: 16),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: _isScanning ? Colors.redAccent : Colors.teal,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
                 onPressed: () {
                   if (_isScanning) {
@@ -359,4 +369,42 @@ class _BluetoothSetupScreenState extends State<BluetoothSetupScreen> {
       ),
     );
   }
+
+  String _statusText(AppLocalizations l10n) {
+    return switch (_status) {
+      _SetupStatus.readyToScan => l10n.readyToScan,
+      _SetupStatus.bluetoothOff => l10n.bluetoothOff,
+      _SetupStatus.noDevicesFound => l10n.noDevicesFound,
+      _SetupStatus.selectDevice => l10n.selectDevice,
+      _SetupStatus.missingPermissions => l10n.missingBluetoothPermissions,
+      _SetupStatus.couldNotTurnOnBluetooth => l10n.couldNotTurnOnBluetooth,
+      _SetupStatus.turnOnBluetoothManually => l10n.turnOnBluetoothManually,
+      _SetupStatus.scanning => l10n.scanning,
+      _SetupStatus.scanCouldNotStart => l10n.scanCouldNotStart,
+      _SetupStatus.connecting => l10n.connectingToDevice(_connectingDeviceName),
+      _SetupStatus.discoveringServices => l10n.discoveringServices,
+      _SetupStatus.creatingSecureDeviceIdentity =>
+        l10n.creatingSecureDeviceIdentity,
+      _SetupStatus.sendingEncryptedCredentials =>
+        l10n.sendingEncryptedCredentials,
+      _SetupStatus.secureSetupFailed => l10n.secureSetupFailed,
+    };
+  }
+}
+
+enum _SetupStatus {
+  readyToScan,
+  bluetoothOff,
+  noDevicesFound,
+  selectDevice,
+  missingPermissions,
+  couldNotTurnOnBluetooth,
+  turnOnBluetoothManually,
+  scanning,
+  scanCouldNotStart,
+  connecting,
+  discoveringServices,
+  creatingSecureDeviceIdentity,
+  sendingEncryptedCredentials,
+  secureSetupFailed,
 }

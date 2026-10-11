@@ -1,4 +1,6 @@
-# Modular Weight-Based IoT Stock and Inventory Monitoring Platform
+# Nesnelerin İnterneti Tabanlı Stok ve Envanter İzleme Platformu
+
+**Internet of Things-Based Stock and Inventory Monitoring Platform**
 
 ## Project Overview
 

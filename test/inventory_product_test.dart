@@ -3,18 +3,27 @@ import 'package:smart_kuhlschrank/models/product_model.dart';
 
 void main() {
   group('InventoryProduct estimation', () {
-    test('rounds current weight to the nearest item count', () {
-      const product = InventoryProduct(
+    test('tracks the 12 to 10 item stock scenario by weight', () {
+      const initialProduct = InventoryProduct(
         id: 'platform1',
         name: 'Brake cleaner spray',
-        currentWeightKg: 0.995,
-        unitWeightKg: 0.1,
+        currentWeightKg: 5.4,
+        unitWeightKg: 0.45,
+        minimumStockThreshold: 3,
+        category: 'Automotive',
+      );
+      const updatedProduct = InventoryProduct(
+        id: 'platform1',
+        name: 'Brake cleaner spray',
+        currentWeightKg: 4.5,
+        unitWeightKg: 0.45,
         minimumStockThreshold: 3,
         category: 'Automotive',
       );
 
-      expect(product.estimatedQuantity, 10);
-      expect(product.isLowStock, isFalse);
+      expect(initialProduct.estimatedQuantity, 12);
+      expect(updatedProduct.estimatedQuantity, 10);
+      expect(updatedProduct.isLowStock, isFalse);
     });
 
     test('treats near-zero load-cell drift as an empty platform', () {

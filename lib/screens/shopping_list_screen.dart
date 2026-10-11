@@ -43,7 +43,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                     ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
-                      value: selectedCategory,
+                      initialValue: selectedCategory,
                       decoration: InputDecoration(
                         labelText: l10n.category,
                         border: const OutlineInputBorder(),

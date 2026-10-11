@@ -2,9 +2,9 @@
 
 ## Project Title
 
-**Modüler Ağırlık Tabanlı IoT Stok ve Envanter İzleme Platformu**
+**Nesnelerin İnterneti Tabanlı Stok ve Envanter İzleme Platformu**
 
-**Modular Weight-Based IoT Stock and Inventory Monitoring Platform**
+**Internet of Things-Based Stock and Inventory Monitoring Platform**
 
 ## Objective
 

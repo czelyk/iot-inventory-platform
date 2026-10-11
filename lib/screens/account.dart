@@ -7,7 +7,7 @@ import 'package:smart_kuhlschrank/screens/bluetooth_setup_screen.dart';
 import 'package:smart_kuhlschrank/screens/settings_screen.dart'; // Import Settings Screen
 
 class AccountScreen extends StatelessWidget {
-  const AccountScreen({Key? key}) : super(key: key);
+  const AccountScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +38,7 @@ class AccountScreen extends StatelessWidget {
           const SizedBox(height: 20),
           Center(
             child: Text(
-              authService.currentUser?.email ?? 'No User',
+              authService.currentUser?.email ?? l10n.noUser,
               style: const TextStyle(fontSize: 18),
             ),
           ),
@@ -76,8 +76,8 @@ class AccountScreen extends StatelessWidget {
           const Divider(),
           ListTile(
             leading: const Icon(Icons.bluetooth_connected, color: Colors.teal),
-            title: const Text('Inventory Device Setup'),
-            subtitle: const Text('Link ESP32 weighing platform'),
+            title: Text(l10n.inventoryDeviceSetup),
+            subtitle: Text(l10n.linkWeighingPlatform),
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () {
               Navigator.push(
