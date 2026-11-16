@@ -131,5 +131,47 @@
   "secureBluetoothConnectionFailed": "A secure Bluetooth connection could not be established.",
   "commandSent": "Command sent.",
   "commandCouldNotBeSent": "The command could not be sent securely.",
-  "startCalibrationPrompt": "Press the button to start calibration."
+  "startCalibrationPrompt": "Press the button to start calibration.",
+  "visualPlatform": "Visual Platform",
+  "visualLastStock": "Last stock: {quantity}",
+  "visualTileHint": "Count stock with the camera",
+  "visualNoStock": "No stock measurement yet",
+  "visualLocalStorage": "Measurements are saved on this device.",
+  "visualLowerBound": "At least this many",
+  "visualCamera": "Shelf camera",
+  "visualSetupHint": "Fix your phone in place. Fit the shelf inside the square and keep the same angle and lighting.",
+  "visualMobileOnly": "Live camera counting is available on Android and iOS.",
+  "visualPermission": "Allow camera access in your device settings, then try again.",
+  "visualCameraFormat": "This camera cannot provide a supported live image.",
+  "visualCameraUnavailable": "The camera could not open. Check that another app is not using it.",
+  "visualCameraOpening": "Opening camera…",
+  "visualCameraOpen": "Open camera",
+  "visualCameraClose": "Close camera",
+  "visualStacked": "Products can hide behind each other",
+  "visualStackedHint": "Show a minimum count such as 5+ in this layout.",
+  "visualPositionError": "The camera view changed. Return to the original view or redo the references.",
+  "visualFrameRejected": "No reliable reading. Check the camera position and lighting.",
+  "visualMeasuring": "Stable readings are saved automatically.",
+  "visualReady": "References are ready. Start counting when the shelf is in view.",
+  "visualMeasureStart": "Start live count",
+  "visualMeasurePause": "Pause count",
+  "visualRecalibrate": "Redo references",
+  "visualEmptyStep": "1 of 2 · Empty shelf",
+  "visualEmptyHint": "Remove all products from the square. Take the reference with no hands in view.",
+  "visualOneStep": "2 of 2 · One product",
+  "visualOneHint": "Place one product fully inside the square. Keep the camera fixed and move your hands away.",
+  "visualReferenceError": "One clear product could not be identified. Check the lighting, remove other items and try again.",
+  "visualCapture": "Capture reference",
+  "visualSaveError": "The change could not be saved on this device. Try again.",
+  "visualLabel": "Platform label",
+  "visualLabelHint": "For example, shelf A3",
+  "visualSaveLabel": "Save label",
+  "visualInvalidLabel": "Enter a valid platform label.",
+  "@visualLastStock": {
+    "placeholders": {
+      "quantity": {
+        "type": "String"
+      }
+    }
+  }
 }

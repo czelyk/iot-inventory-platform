@@ -392,4 +392,126 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get startCalibrationPrompt =>
       'Drücken Sie die Taste, um die Kalibrierung zu starten.';
+
+  @override
+  String get visualPlatform => 'Visuelle Plattform';
+
+  @override
+  String visualLastStock(String quantity) {
+    return 'Letzter Bestand: $quantity';
+  }
+
+  @override
+  String get visualTileHint => 'Bestand mit der Kamera zählen';
+
+  @override
+  String get visualNoStock => 'Noch keine Bestandsmessung';
+
+  @override
+  String get visualLocalStorage =>
+      'Messungen werden auf diesem Gerät gespeichert.';
+
+  @override
+  String get visualLowerBound => 'Mindestens diese Anzahl';
+
+  @override
+  String get visualCamera => 'Regalkamera';
+
+  @override
+  String get visualSetupHint =>
+      'Fixiere das Handy. Richte das Regal im Quadrat aus und behalte Winkel und Licht bei.';
+
+  @override
+  String get visualMobileOnly =>
+      'Die Live-Zählung ist unter Android und iOS verfügbar.';
+
+  @override
+  String get visualPermission =>
+      'Erlaube den Kamerazugriff in den Geräteeinstellungen und versuche es erneut.';
+
+  @override
+  String get visualCameraFormat =>
+      'Diese Kamera liefert kein unterstütztes Live-Bild.';
+
+  @override
+  String get visualCameraUnavailable =>
+      'Die Kamera ließ sich nicht öffnen. Prüfe, ob eine andere App sie verwendet.';
+
+  @override
+  String get visualCameraOpening => 'Kamera wird geöffnet…';
+
+  @override
+  String get visualCameraOpen => 'Kamera öffnen';
+
+  @override
+  String get visualCameraClose => 'Kamera schließen';
+
+  @override
+  String get visualStacked => 'Produkte können sich verdecken';
+
+  @override
+  String get visualStackedHint =>
+      'Bei dieser Anordnung eine Mindestanzahl wie 5+ anzeigen.';
+
+  @override
+  String get visualPositionError =>
+      'Das Kamerabild hat sich geändert. Kehre zur ursprünglichen Ansicht zurück oder erneuere die Referenzen.';
+
+  @override
+  String get visualFrameRejected =>
+      'Keine zuverlässige Messung. Prüfe Kameraposition und Licht.';
+
+  @override
+  String get visualMeasuring =>
+      'Stabile Messungen werden automatisch gespeichert.';
+
+  @override
+  String get visualReady =>
+      'Die Referenzen sind bereit. Starte die Zählung, wenn das Regal im Bild ist.';
+
+  @override
+  String get visualMeasureStart => 'Live-Zählung starten';
+
+  @override
+  String get visualMeasurePause => 'Zählung pausieren';
+
+  @override
+  String get visualRecalibrate => 'Referenzen erneuern';
+
+  @override
+  String get visualEmptyStep => '1 von 2 · Leeres Regal';
+
+  @override
+  String get visualEmptyHint =>
+      'Entferne alle Produkte aus dem Quadrat. Erfasse die Referenz ohne Hände im Bild.';
+
+  @override
+  String get visualOneStep => '2 von 2 · Ein Produkt';
+
+  @override
+  String get visualOneHint =>
+      'Stelle ein Produkt vollständig ins Quadrat. Lass die Kamera fest stehen und nimm die Hände aus dem Bild.';
+
+  @override
+  String get visualReferenceError =>
+      'Ein einzelnes Produkt war nicht klar erkennbar. Prüfe das Licht, entferne andere Gegenstände und versuche es erneut.';
+
+  @override
+  String get visualCapture => 'Referenz erfassen';
+
+  @override
+  String get visualSaveError =>
+      'Die Änderung konnte auf diesem Gerät nicht gespeichert werden. Versuche es erneut.';
+
+  @override
+  String get visualLabel => 'Plattformname';
+
+  @override
+  String get visualLabelHint => 'Zum Beispiel Regal A3';
+
+  @override
+  String get visualSaveLabel => 'Namen speichern';
+
+  @override
+  String get visualInvalidLabel => 'Gib einen gültigen Plattformnamen ein.';
 }

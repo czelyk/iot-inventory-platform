@@ -28,7 +28,7 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "com.example.smart_kuhlschrank"
-    compileSdk = 34
+    compileSdk = 35
     // ndkVersion = "27.0.12077973" // Kaldırıldı, Flutter yönetsin
 
     compileOptions {

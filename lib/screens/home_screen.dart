@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_kuhlschrank/l10n/app_localizations.dart';
 
@@ -6,6 +7,8 @@ import '../services/inventory_service.dart';
 import '../services/shopping_list_service.dart';
 import '../utils/inventory_categories.dart';
 import '../utils/input_validation.dart';
+import '../services/visual_platform_store.dart';
+import 'visual_platform_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,6 +20,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final InventoryService _inventoryService = InventoryService();
   final ShoppingListService _shoppingListService = ShoppingListService();
+  late final _products = _inventoryService.getProductsStream();
   final Set<String> _addingToRestock = {};
 
   Future<void> _showEditDialog(
@@ -238,51 +242,50 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(l10n.inventoryMonitoring)),
       body: StreamBuilder<List<InventoryProduct>>(
-        stream: _inventoryService.getProductsStream(),
+        stream: _products,
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text(l10n.updateFailed));
-          }
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text(l10n.noProductsFound));
-          }
-
-          final products = snapshot.data!;
+          final products = snapshot.data ?? const <InventoryProduct>[];
           final now = DateTime.now();
-          final lowStockCount = products
-              .where(
-                (product) =>
-                    product.isLowStock == true &&
-                    !product.isMeasurementStaleAt(now),
-              )
-              .length;
-          final staleCount = products
-              .where((product) => product.isMeasurementStaleAt(now))
-              .length;
-
-          return ListView.builder(
+          final userId = FirebaseAuth.instance.currentUser?.uid;
+          return ListView(
             padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: products.length + 1,
-            itemBuilder: (context, index) {
-              if (index == 0) {
-                return _InventorySummary(
+            children: [
+              if (products.isNotEmpty)
+                _InventorySummary(
                   platformCount: products.length,
-                  lowStockCount: lowStockCount,
-                  staleCount: staleCount,
-                );
-              }
-              final product = products[index - 1];
-              return _ProductCard(
-                product: product,
-                icon: InventoryCategories.iconFor(product.category),
-                onEdit: () => _showEditDialog(context, product),
-                isAddingToRestock: _addingToRestock.contains(product.id),
-                onAddToRestock: () => _addToRestockingList(product),
-              );
-            },
+                  lowStockCount: products.where((product) =>
+                    product.isLowStock == true && !product.isMeasurementStaleAt(now),
+                  ).length,
+                  staleCount: products.where((product) =>
+                    product.isMeasurementStaleAt(now),
+                  ).length,
+                ),
+              if (userId != null)
+                VisualPlatformTile(
+                  key: ValueKey(userId),
+                  store: VisualPlatformStore(userId),
+                ),
+              if (snapshot.connectionState == ConnectionState.waiting)
+                const LinearProgressIndicator()
+              else if (snapshot.hasError)
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text(l10n.updateFailed),
+                )
+              else if (products.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text(l10n.noProductsFound),
+                ),
+              for (final product in products)
+                _ProductCard(
+                  product: product,
+                  icon: InventoryCategories.iconFor(product.category),
+                  onEdit: () => _showEditDialog(context, product),
+                  isAddingToRestock: _addingToRestock.contains(product.id),
+                  onAddToRestock: () => _addToRestockingList(product),
+                ),
+            ],
           );
         },
       ),

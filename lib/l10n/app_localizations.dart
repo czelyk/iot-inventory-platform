@@ -801,6 +801,216 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Drücken Sie die Taste, um die Kalibrierung zu starten.'**
   String get startCalibrationPrompt;
+
+  /// No description provided for @visualPlatform.
+  ///
+  /// In de, this message translates to:
+  /// **'Visuelle Plattform'**
+  String get visualPlatform;
+
+  /// No description provided for @visualLastStock.
+  ///
+  /// In de, this message translates to:
+  /// **'Letzter Bestand: {quantity}'**
+  String visualLastStock(String quantity);
+
+  /// No description provided for @visualTileHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Bestand mit der Kamera zählen'**
+  String get visualTileHint;
+
+  /// No description provided for @visualNoStock.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine Bestandsmessung'**
+  String get visualNoStock;
+
+  /// No description provided for @visualLocalStorage.
+  ///
+  /// In de, this message translates to:
+  /// **'Messungen werden auf diesem Gerät gespeichert.'**
+  String get visualLocalStorage;
+
+  /// No description provided for @visualLowerBound.
+  ///
+  /// In de, this message translates to:
+  /// **'Mindestens diese Anzahl'**
+  String get visualLowerBound;
+
+  /// No description provided for @visualCamera.
+  ///
+  /// In de, this message translates to:
+  /// **'Regalkamera'**
+  String get visualCamera;
+
+  /// No description provided for @visualSetupHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Fixiere das Handy. Richte das Regal im Quadrat aus und behalte Winkel und Licht bei.'**
+  String get visualSetupHint;
+
+  /// No description provided for @visualMobileOnly.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Live-Zählung ist unter Android und iOS verfügbar.'**
+  String get visualMobileOnly;
+
+  /// No description provided for @visualPermission.
+  ///
+  /// In de, this message translates to:
+  /// **'Erlaube den Kamerazugriff in den Geräteeinstellungen und versuche es erneut.'**
+  String get visualPermission;
+
+  /// No description provided for @visualCameraFormat.
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Kamera liefert kein unterstütztes Live-Bild.'**
+  String get visualCameraFormat;
+
+  /// No description provided for @visualCameraUnavailable.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Kamera ließ sich nicht öffnen. Prüfe, ob eine andere App sie verwendet.'**
+  String get visualCameraUnavailable;
+
+  /// No description provided for @visualCameraOpening.
+  ///
+  /// In de, this message translates to:
+  /// **'Kamera wird geöffnet…'**
+  String get visualCameraOpening;
+
+  /// No description provided for @visualCameraOpen.
+  ///
+  /// In de, this message translates to:
+  /// **'Kamera öffnen'**
+  String get visualCameraOpen;
+
+  /// No description provided for @visualCameraClose.
+  ///
+  /// In de, this message translates to:
+  /// **'Kamera schließen'**
+  String get visualCameraClose;
+
+  /// No description provided for @visualStacked.
+  ///
+  /// In de, this message translates to:
+  /// **'Produkte können sich verdecken'**
+  String get visualStacked;
+
+  /// No description provided for @visualStackedHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Bei dieser Anordnung eine Mindestanzahl wie 5+ anzeigen.'**
+  String get visualStackedHint;
+
+  /// No description provided for @visualPositionError.
+  ///
+  /// In de, this message translates to:
+  /// **'Das Kamerabild hat sich geändert. Kehre zur ursprünglichen Ansicht zurück oder erneuere die Referenzen.'**
+  String get visualPositionError;
+
+  /// No description provided for @visualFrameRejected.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine zuverlässige Messung. Prüfe Kameraposition und Licht.'**
+  String get visualFrameRejected;
+
+  /// No description provided for @visualMeasuring.
+  ///
+  /// In de, this message translates to:
+  /// **'Stabile Messungen werden automatisch gespeichert.'**
+  String get visualMeasuring;
+
+  /// No description provided for @visualReady.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Referenzen sind bereit. Starte die Zählung, wenn das Regal im Bild ist.'**
+  String get visualReady;
+
+  /// No description provided for @visualMeasureStart.
+  ///
+  /// In de, this message translates to:
+  /// **'Live-Zählung starten'**
+  String get visualMeasureStart;
+
+  /// No description provided for @visualMeasurePause.
+  ///
+  /// In de, this message translates to:
+  /// **'Zählung pausieren'**
+  String get visualMeasurePause;
+
+  /// No description provided for @visualRecalibrate.
+  ///
+  /// In de, this message translates to:
+  /// **'Referenzen erneuern'**
+  String get visualRecalibrate;
+
+  /// No description provided for @visualEmptyStep.
+  ///
+  /// In de, this message translates to:
+  /// **'1 von 2 · Leeres Regal'**
+  String get visualEmptyStep;
+
+  /// No description provided for @visualEmptyHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Entferne alle Produkte aus dem Quadrat. Erfasse die Referenz ohne Hände im Bild.'**
+  String get visualEmptyHint;
+
+  /// No description provided for @visualOneStep.
+  ///
+  /// In de, this message translates to:
+  /// **'2 von 2 · Ein Produkt'**
+  String get visualOneStep;
+
+  /// No description provided for @visualOneHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Stelle ein Produkt vollständig ins Quadrat. Lass die Kamera fest stehen und nimm die Hände aus dem Bild.'**
+  String get visualOneHint;
+
+  /// No description provided for @visualReferenceError.
+  ///
+  /// In de, this message translates to:
+  /// **'Ein einzelnes Produkt war nicht klar erkennbar. Prüfe das Licht, entferne andere Gegenstände und versuche es erneut.'**
+  String get visualReferenceError;
+
+  /// No description provided for @visualCapture.
+  ///
+  /// In de, this message translates to:
+  /// **'Referenz erfassen'**
+  String get visualCapture;
+
+  /// No description provided for @visualSaveError.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Änderung konnte auf diesem Gerät nicht gespeichert werden. Versuche es erneut.'**
+  String get visualSaveError;
+
+  /// No description provided for @visualLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Plattformname'**
+  String get visualLabel;
+
+  /// No description provided for @visualLabelHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Zum Beispiel Regal A3'**
+  String get visualLabelHint;
+
+  /// No description provided for @visualSaveLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Namen speichern'**
+  String get visualSaveLabel;
+
+  /// No description provided for @visualInvalidLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Gib einen gültigen Plattformnamen ein.'**
+  String get visualInvalidLabel;
 }
 
 class _AppLocalizationsDelegate

@@ -380,4 +380,123 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get startCalibrationPrompt =>
       'Kalibrasyona başlamak için butona basın.';
+
+  @override
+  String get visualPlatform => 'Visual Platform';
+
+  @override
+  String visualLastStock(String quantity) {
+    return 'Son stok: $quantity';
+  }
+
+  @override
+  String get visualTileHint => 'Kamerayla stok say';
+
+  @override
+  String get visualNoStock => 'Henüz stok ölçümü yok';
+
+  @override
+  String get visualLocalStorage => 'Ölçümler bu cihazda saklanır.';
+
+  @override
+  String get visualLowerBound => 'En az bu kadar';
+
+  @override
+  String get visualCamera => 'Raf kamerası';
+
+  @override
+  String get visualSetupHint =>
+      'Telefonu sabitle. Rafı kareye sığdır ve açıyı, ışığı değiştirme.';
+
+  @override
+  String get visualMobileOnly =>
+      'Canlı kamera sayımı Android ve iOS\'ta kullanılabilir.';
+
+  @override
+  String get visualPermission =>
+      'Cihaz ayarlarından kamera iznini verip tekrar dene.';
+
+  @override
+  String get visualCameraFormat =>
+      'Bu kamera desteklenen biçimde canlı görüntü veremiyor.';
+
+  @override
+  String get visualCameraUnavailable =>
+      'Kamera açılamadı. Başka bir uygulamanın kamerayı kullanmadığını kontrol et.';
+
+  @override
+  String get visualCameraOpening => 'Kamera açılıyor…';
+
+  @override
+  String get visualCameraOpen => 'Kamerayı aç';
+
+  @override
+  String get visualCameraClose => 'Kamerayı kapat';
+
+  @override
+  String get visualStacked => 'Ürünler birbirini örtebilir';
+
+  @override
+  String get visualStackedHint => 'Bu dizilimde 5+ gibi bir alt sınır göster.';
+
+  @override
+  String get visualPositionError =>
+      'Kamera görünümü değişti. İlk konuma dön veya referansları yenile.';
+
+  @override
+  String get visualFrameRejected =>
+      'Güvenilir ölçüm alınamadı. Kamera konumunu ve ışığı kontrol et.';
+
+  @override
+  String get visualMeasuring => 'Sabitlenen ölçümler otomatik kaydedilir.';
+
+  @override
+  String get visualReady =>
+      'Referanslar hazır. Raf kadrajdayken sayımı başlat.';
+
+  @override
+  String get visualMeasureStart => 'Canlı sayımı başlat';
+
+  @override
+  String get visualMeasurePause => 'Sayımı duraklat';
+
+  @override
+  String get visualRecalibrate => 'Referansları yenile';
+
+  @override
+  String get visualEmptyStep => '1 / 2 · Boş raf';
+
+  @override
+  String get visualEmptyHint =>
+      'Karedeki tüm ürünleri kaldır. Ellerin kadrajda değilken referansı al.';
+
+  @override
+  String get visualOneStep => '2 / 2 · Tek ürün';
+
+  @override
+  String get visualOneHint =>
+      'Bir ürünü kareye tamamen yerleştir. Kamerayı oynatmadan ellerini kadrajdan çıkar.';
+
+  @override
+  String get visualReferenceError =>
+      'Tek ürün net ayırt edilemedi. Işığı kontrol et, diğer nesneleri kaldır ve tekrar dene.';
+
+  @override
+  String get visualCapture => 'Referansı al';
+
+  @override
+  String get visualSaveError =>
+      'Değişiklik bu cihaza kaydedilemedi. Tekrar dene.';
+
+  @override
+  String get visualLabel => 'Platform etiketi';
+
+  @override
+  String get visualLabelHint => 'Örneğin, raf A3';
+
+  @override
+  String get visualSaveLabel => 'Etiketi kaydet';
+
+  @override
+  String get visualInvalidLabel => 'Geçerli bir platform etiketi gir.';
 }

@@ -116,5 +116,47 @@
   "secureBluetoothConnectionFailed": "Güvenli Bluetooth bağlantısı kurulamadı.",
   "commandSent": "Komut gönderildi.",
   "commandCouldNotBeSent": "Komut güvenli biçimde gönderilemedi.",
-  "startCalibrationPrompt": "Kalibrasyona başlamak için butona basın."
+  "startCalibrationPrompt": "Kalibrasyona başlamak için butona basın.",
+  "visualPlatform": "Visual Platform",
+  "visualLastStock": "Son stok: {quantity}",
+  "visualTileHint": "Kamerayla stok say",
+  "visualNoStock": "Henüz stok ölçümü yok",
+  "visualLocalStorage": "Ölçümler bu cihazda saklanır.",
+  "visualLowerBound": "En az bu kadar",
+  "visualCamera": "Raf kamerası",
+  "visualSetupHint": "Telefonu sabitle. Rafı kareye sığdır ve açıyı, ışığı değiştirme.",
+  "visualMobileOnly": "Canlı kamera sayımı Android ve iOS'ta kullanılabilir.",
+  "visualPermission": "Cihaz ayarlarından kamera iznini verip tekrar dene.",
+  "visualCameraFormat": "Bu kamera desteklenen biçimde canlı görüntü veremiyor.",
+  "visualCameraUnavailable": "Kamera açılamadı. Başka bir uygulamanın kamerayı kullanmadığını kontrol et.",
+  "visualCameraOpening": "Kamera açılıyor…",
+  "visualCameraOpen": "Kamerayı aç",
+  "visualCameraClose": "Kamerayı kapat",
+  "visualStacked": "Ürünler birbirini örtebilir",
+  "visualStackedHint": "Bu dizilimde 5+ gibi bir alt sınır göster.",
+  "visualPositionError": "Kamera görünümü değişti. İlk konuma dön veya referansları yenile.",
+  "visualFrameRejected": "Güvenilir ölçüm alınamadı. Kamera konumunu ve ışığı kontrol et.",
+  "visualMeasuring": "Sabitlenen ölçümler otomatik kaydedilir.",
+  "visualReady": "Referanslar hazır. Raf kadrajdayken sayımı başlat.",
+  "visualMeasureStart": "Canlı sayımı başlat",
+  "visualMeasurePause": "Sayımı duraklat",
+  "visualRecalibrate": "Referansları yenile",
+  "visualEmptyStep": "1 / 2 · Boş raf",
+  "visualEmptyHint": "Karedeki tüm ürünleri kaldır. Ellerin kadrajda değilken referansı al.",
+  "visualOneStep": "2 / 2 · Tek ürün",
+  "visualOneHint": "Bir ürünü kareye tamamen yerleştir. Kamerayı oynatmadan ellerini kadrajdan çıkar.",
+  "visualReferenceError": "Tek ürün net ayırt edilemedi. Işığı kontrol et, diğer nesneleri kaldır ve tekrar dene.",
+  "visualCapture": "Referansı al",
+  "visualSaveError": "Değişiklik bu cihaza kaydedilemedi. Tekrar dene.",
+  "visualLabel": "Platform etiketi",
+  "visualLabelHint": "Örneğin, raf A3",
+  "visualSaveLabel": "Etiketi kaydet",
+  "visualInvalidLabel": "Geçerli bir platform etiketi gir.",
+  "@visualLastStock": {
+    "placeholders": {
+      "quantity": {
+        "type": "String"
+      }
+    }
+  }
 }

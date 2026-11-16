@@ -131,5 +131,47 @@
   "secureBluetoothConnectionFailed": "Eine sichere Bluetooth-Verbindung konnte nicht hergestellt werden.",
   "commandSent": "Befehl gesendet.",
   "commandCouldNotBeSent": "Der Befehl konnte nicht sicher gesendet werden.",
-  "startCalibrationPrompt": "Drücken Sie die Taste, um die Kalibrierung zu starten."
+  "startCalibrationPrompt": "Drücken Sie die Taste, um die Kalibrierung zu starten.",
+  "visualPlatform": "Visuelle Plattform",
+  "visualLastStock": "Letzter Bestand: {quantity}",
+  "visualTileHint": "Bestand mit der Kamera zählen",
+  "visualNoStock": "Noch keine Bestandsmessung",
+  "visualLocalStorage": "Messungen werden auf diesem Gerät gespeichert.",
+  "visualLowerBound": "Mindestens diese Anzahl",
+  "visualCamera": "Regalkamera",
+  "visualSetupHint": "Fixiere das Handy. Richte das Regal im Quadrat aus und behalte Winkel und Licht bei.",
+  "visualMobileOnly": "Die Live-Zählung ist unter Android und iOS verfügbar.",
+  "visualPermission": "Erlaube den Kamerazugriff in den Geräteeinstellungen und versuche es erneut.",
+  "visualCameraFormat": "Diese Kamera liefert kein unterstütztes Live-Bild.",
+  "visualCameraUnavailable": "Die Kamera ließ sich nicht öffnen. Prüfe, ob eine andere App sie verwendet.",
+  "visualCameraOpening": "Kamera wird geöffnet…",
+  "visualCameraOpen": "Kamera öffnen",
+  "visualCameraClose": "Kamera schließen",
+  "visualStacked": "Produkte können sich verdecken",
+  "visualStackedHint": "Bei dieser Anordnung eine Mindestanzahl wie 5+ anzeigen.",
+  "visualPositionError": "Das Kamerabild hat sich geändert. Kehre zur ursprünglichen Ansicht zurück oder erneuere die Referenzen.",
+  "visualFrameRejected": "Keine zuverlässige Messung. Prüfe Kameraposition und Licht.",
+  "visualMeasuring": "Stabile Messungen werden automatisch gespeichert.",
+  "visualReady": "Die Referenzen sind bereit. Starte die Zählung, wenn das Regal im Bild ist.",
+  "visualMeasureStart": "Live-Zählung starten",
+  "visualMeasurePause": "Zählung pausieren",
+  "visualRecalibrate": "Referenzen erneuern",
+  "visualEmptyStep": "1 von 2 · Leeres Regal",
+  "visualEmptyHint": "Entferne alle Produkte aus dem Quadrat. Erfasse die Referenz ohne Hände im Bild.",
+  "visualOneStep": "2 von 2 · Ein Produkt",
+  "visualOneHint": "Stelle ein Produkt vollständig ins Quadrat. Lass die Kamera fest stehen und nimm die Hände aus dem Bild.",
+  "visualReferenceError": "Ein einzelnes Produkt war nicht klar erkennbar. Prüfe das Licht, entferne andere Gegenstände und versuche es erneut.",
+  "visualCapture": "Referenz erfassen",
+  "visualSaveError": "Die Änderung konnte auf diesem Gerät nicht gespeichert werden. Versuche es erneut.",
+  "visualLabel": "Plattformname",
+  "visualLabelHint": "Zum Beispiel Regal A3",
+  "visualSaveLabel": "Namen speichern",
+  "visualInvalidLabel": "Gib einen gültigen Plattformnamen ein.",
+  "@visualLastStock": {
+    "placeholders": {
+      "quantity": {
+        "type": "String"
+      }
+    }
+  }
 }

@@ -380,4 +380,124 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get startCalibrationPrompt => 'Press the button to start calibration.';
+
+  @override
+  String get visualPlatform => 'Visual Platform';
+
+  @override
+  String visualLastStock(String quantity) {
+    return 'Last stock: $quantity';
+  }
+
+  @override
+  String get visualTileHint => 'Count stock with the camera';
+
+  @override
+  String get visualNoStock => 'No stock measurement yet';
+
+  @override
+  String get visualLocalStorage => 'Measurements are saved on this device.';
+
+  @override
+  String get visualLowerBound => 'At least this many';
+
+  @override
+  String get visualCamera => 'Shelf camera';
+
+  @override
+  String get visualSetupHint =>
+      'Fix your phone in place. Fit the shelf inside the square and keep the same angle and lighting.';
+
+  @override
+  String get visualMobileOnly =>
+      'Live camera counting is available on Android and iOS.';
+
+  @override
+  String get visualPermission =>
+      'Allow camera access in your device settings, then try again.';
+
+  @override
+  String get visualCameraFormat =>
+      'This camera cannot provide a supported live image.';
+
+  @override
+  String get visualCameraUnavailable =>
+      'The camera could not open. Check that another app is not using it.';
+
+  @override
+  String get visualCameraOpening => 'Opening camera…';
+
+  @override
+  String get visualCameraOpen => 'Open camera';
+
+  @override
+  String get visualCameraClose => 'Close camera';
+
+  @override
+  String get visualStacked => 'Products can hide behind each other';
+
+  @override
+  String get visualStackedHint =>
+      'Show a minimum count such as 5+ in this layout.';
+
+  @override
+  String get visualPositionError =>
+      'The camera view changed. Return to the original view or redo the references.';
+
+  @override
+  String get visualFrameRejected =>
+      'No reliable reading. Check the camera position and lighting.';
+
+  @override
+  String get visualMeasuring => 'Stable readings are saved automatically.';
+
+  @override
+  String get visualReady =>
+      'References are ready. Start counting when the shelf is in view.';
+
+  @override
+  String get visualMeasureStart => 'Start live count';
+
+  @override
+  String get visualMeasurePause => 'Pause count';
+
+  @override
+  String get visualRecalibrate => 'Redo references';
+
+  @override
+  String get visualEmptyStep => '1 of 2 · Empty shelf';
+
+  @override
+  String get visualEmptyHint =>
+      'Remove all products from the square. Take the reference with no hands in view.';
+
+  @override
+  String get visualOneStep => '2 of 2 · One product';
+
+  @override
+  String get visualOneHint =>
+      'Place one product fully inside the square. Keep the camera fixed and move your hands away.';
+
+  @override
+  String get visualReferenceError =>
+      'One clear product could not be identified. Check the lighting, remove other items and try again.';
+
+  @override
+  String get visualCapture => 'Capture reference';
+
+  @override
+  String get visualSaveError =>
+      'The change could not be saved on this device. Try again.';
+
+  @override
+  String get visualLabel => 'Platform label';
+
+  @override
+  String get visualLabelHint => 'For example, shelf A3';
+
+  @override
+  String get visualSaveLabel => 'Save label';
+
+  @override
+  String get visualInvalidLabel => 'Enter a valid platform label.';
 }

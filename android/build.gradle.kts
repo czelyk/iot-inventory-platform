@@ -18,7 +18,7 @@ subprojects {
 
 // --- FIX: Define 'flutter' properties for plugins ---
 val flutterVersion = mapOf(
-    "compileSdkVersion" to 34,
+    "compileSdkVersion" to 35,
     "minSdkVersion" to 23, // Updated to 23 for Firebase Auth compatibility
     "targetSdkVersion" to 34
 )
@@ -30,8 +30,8 @@ subprojects {
         if ((plugins.hasPlugin("android") || plugins.hasPlugin("com.android.application") || plugins.hasPlugin("com.android.library"))) {
             val android = extensions.findByName("android") as? com.android.build.gradle.BaseExtension
             android?.apply {
-                if (compileSdkVersion == null || (compileSdkVersion as? String)?.toIntOrNull() != 34) {
-                    compileSdkVersion(34)
+                if (compileSdkVersion == null || (compileSdkVersion as? String)?.toIntOrNull() != 35) {
+                    compileSdkVersion(35)
                 }
                 defaultConfig {
                     minSdkVersion(23) // Updated to 23
